@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPACE JUNKIES UGANDA — We're Already Gone</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Exo+2:ital,wght@0,300;0,700;1,900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:#000005;--deep:#020210;--neon-orange:#FF4500;--neon-cyan:#00FFD1;
+  --neon-yellow:#FFD700;--acid-green:#39FF14;--plasma:#B44FFF;
+  --ash:rgba(255,255,255,0.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--void);color:#ddd;font-family:'Rajdhani',sans-serif;overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cur{position:fixed;width:22px;height:22px;border:1.5px solid var(--neon-cyan);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width .15s,height .15s,border-color .15s;mix-blend-mode:difference;}
+#cur2{position:fixed;width:5px;height:5px;background:var(--neon-orange);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);}
+
+/* CANVAS BG */
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* SCANLINES */
+.scan-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:2;animation:scan-drift 8s linear infinite;}
+@keyframes scan-drift{from{background-position:0 0;}to{background-position:0 100%;}}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:3;min-height:100vh;}
+.page.active{display:block;}
+
+/* ===== NAV ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 30px;height:62px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,5,.95) 0%,rgba(0,0,5,.6) 100%);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.04);}
+.nav-logo{font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:900;color:var(--neon-orange);text-shadow:0 0 20px var(--neon-orange);cursor:pointer;letter-spacing:.05em;}
+.nav-logo span{color:rgba(255,255,255,.3);font-size:.6rem;}
+.nav-links{display:flex;gap:6px;list-style:none;flex-wrap:wrap;}
+.nav-links li a{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.35);text-decoration:none;letter-spacing:.2em;text-transform:uppercase;transition:color .25s,text-shadow .25s;padding:8px 10px;display:block;cursor:pointer;}
+.nav-links li a:hover,.nav-links li a.active-link{color:var(--neon-cyan);text-shadow:0 0 10px var(--neon-cyan);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+#sound-btn{background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:.15em;padding:7px 12px;cursor:pointer;transition:all .25s;}
+#sound-btn:hover{border-color:var(--neon-cyan);color:var(--neon-cyan);}
+.live-dot{width:7px;height:7px;background:var(--acid-green);border-radius:50%;box-shadow:0 0 8px var(--acid-green);animation:blink 1.4s step-end infinite;}
+@keyframes blink{50%{opacity:0;}}
+
+/* ===== TICKER ===== */
+.ticker-wrap{overflow:hidden;background:rgba(255,69,0,.07);border-top:1px solid rgba(255,69,0,.15);border-bottom:1px solid rgba(255,69,0,.15);padding:10px 0;position:relative;z-index:10;}
+.ticker-label{position:absolute;left:0;top:0;bottom:0;background:var(--neon-orange);color:#000;font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:900;letter-spacing:.1em;display:flex;align-items:center;padding:0 14px;z-index:3;}
+.ticker-inner{display:flex;white-space:nowrap;animation:tick 40s linear infinite;padding-left:160px;}
+.tick-item{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.45);padding:0 50px;display:flex;align-items:center;gap:8px;}
+.tick-item::before{content:'◆';color:var(--neon-orange);font-size:.45rem;}
+@keyframes tick{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ===== HERO ===== */
+#home{padding-top:62px;}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:0 20px;}
+.hero-tag{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--neon-orange);letter-spacing:.4em;text-transform:uppercase;margin-bottom:18px;animation:fadeUp 1s .4s both;}
+.hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(3.5rem,10vw,9rem);font-weight:900;line-height:.88;text-align:center;animation:fadeUp 1s .7s both;}
+.ht1{display:block;color:#fff;text-shadow:0 0 60px rgba(255,255,255,.15);}
+.ht2{display:block;color:var(--neon-orange);text-shadow:0 0 50px var(--neon-orange),0 0 100px rgba(255,69,0,.3);position:relative;}
+.ht2::after{content:attr(data-t);position:absolute;left:3px;top:3px;color:var(--neon-cyan);opacity:.25;clip-path:polygon(0 35%,100% 35%,100% 55%,0 55%);animation:glitch 5s infinite;}
+.ht3{display:block;font-size:.22em;color:rgba(255,255,255,.35);letter-spacing:.6em;margin-top:12px;-webkit-text-stroke:0;}
+@keyframes glitch{0%,94%,100%{transform:none;opacity:.25;}95%{transform:translateX(-4px);opacity:.6;}97%{transform:translateX(4px);opacity:.15;}99%{transform:none;opacity:.35;}}
+.hero-sub{font-size:clamp(.9rem,2vw,1.15rem);color:rgba(255,255,255,.38);max-width:580px;text-align:center;line-height:1.7;margin-top:28px;font-weight:300;animation:fadeUp 1s 1s both;}
+.hero-cta{display:flex;gap:16px;margin-top:44px;animation:fadeUp 1s 1.3s both;flex-wrap:wrap;justify-content:center;}
+.btn-o{font-family:'Orbitron',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:15px 36px;background:var(--neon-orange);color:#000;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .3s;position:relative;overflow:hidden;}
+.btn-o::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transition:left .4s;}
+.btn-o:hover::before{left:100%;}
+.btn-o:hover{box-shadow:0 0 40px var(--neon-orange);}
+.btn-c{font-family:'Orbitron',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:14px 36px;background:transparent;color:var(--neon-cyan);border:1px solid var(--neon-cyan);cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .3s;}
+.btn-c:hover{background:rgba(0,255,209,.08);box-shadow:0 0 30px rgba(0,255,209,.25);}
+.scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;}
+.scroll-line{width:1px;height:40px;background:linear-gradient(180deg,transparent,var(--neon-cyan));animation:scroll-pulse 2s ease infinite;}
+@keyframes scroll-pulse{0%,100%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}}
+.scroll-txt{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.18);letter-spacing:.3em;}
+.planet-wrap{position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:500px;height:500px;pointer-events:none;opacity:.18;}
+.planet{width:380px;height:380px;border-radius:50%;background:radial-gradient(circle at 28% 28%,#ff6b35,#cc2200 40%,#330000 70%,#000 100%);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 120px rgba(255,69,0,.25);animation:planet-pulse 8s ease-in-out infinite;}
+@keyframes planet-pulse{0%,100%{box-shadow:0 0 80px rgba(255,69,0,.2);}50%{box-shadow:0 0 160px rgba(255,69,0,.4);}}
+.planet-ring{width:500px;height:100px;border:2px solid rgba(255,150,50,.35);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(75deg);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+
+/* Floating particles */
+.particle{position:absolute;border-radius:50%;pointer-events:none;animation:float-particle linear infinite;}
+@keyframes float-particle{0%{transform:translateY(0) rotate(0);opacity:.7;}100%{transform:translateY(-100vh) rotate(360deg);opacity:0;}}
+
+/* ===== SECTION COMMONS ===== */
+.sec{padding:100px 40px 80px;max-width:1380px;margin:0 auto;}
+.sec-tag{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--neon-orange);letter-spacing:.4em;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:12px;}
+.sec-tag::before{content:'';display:inline-block;width:28px;height:1px;background:var(--neon-orange);}
+.sec-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,4vw,3.2rem);font-weight:900;line-height:1.1;color:#fff;margin-bottom:14px;}
+.sec-title .a{color:var(--neon-cyan);}
+.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,69,0,.25) 30%,transparent 60%,rgba(0,255,209,.2) 80%,transparent);}
+
+/* ===== MISSION ===== */
+.mission-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;margin-top:50px;}
+.sec-body{font-size:1rem;line-height:1.85;color:rgba(255,255,255,.45);font-weight:300;margin-bottom:18px;}
+.stats-2x2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:36px;}
+.stat-card{padding:22px;border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.018);position:relative;overflow:hidden;transition:all .3s;cursor:default;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--neon-orange);opacity:.65;}
+.stat-card:hover{border-color:rgba(255,69,0,.3);background:rgba(255,69,0,.04);transform:translateY(-2px);}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;color:var(--neon-orange);text-shadow:0 0 20px var(--neon-orange);line-height:1;}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.25);letter-spacing:.2em;text-transform:uppercase;margin-top:5px;}
+.founder-card{padding:28px;border:1px solid rgba(180,79,255,.25);background:rgba(180,79,255,.04);margin-top:24px;position:relative;overflow:hidden;}
+.founder-card::after{content:'FOUNDER';position:absolute;top:12px;right:12px;font-family:'Share Tech Mono',monospace;font-size:.5rem;color:rgba(180,79,255,.5);letter-spacing:.3em;}
+.founder-name{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:var(--plasma);text-shadow:0 0 20px var(--plasma);}
+.founder-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:rgba(255,255,255,.25);letter-spacing:.15em;margin-top:5px;}
+.terminal-box{background:#000;border:1px solid rgba(0,255,209,.18);padding:28px;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--neon-cyan);line-height:2.1;position:relative;box-shadow:0 0 40px rgba(0,255,209,.04),inset 0 0 30px rgba(0,0,0,.5);}
+.terminal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:28px;background:rgba(0,255,209,.04);border-bottom:1px solid rgba(0,255,209,.08);}
+.t-dots{position:absolute;top:9px;left:12px;display:flex;gap:5px;}
+.t-dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.08);}
+.t-bar{position:absolute;top:7px;left:50%;transform:translateX(-50%);font-size:.55rem;color:rgba(0,255,209,.3);letter-spacing:.2em;}
+.t-body{margin-top:10px;}
+.t-prompt{color:var(--neon-orange);}
+.t-dim{color:rgba(0,255,209,.35);}
+.t-cursor{display:inline-block;width:8px;height:13px;background:var(--neon-cyan);animation:blink 1s step-end infinite;vertical-align:bottom;}
+
+/* ===== FEED ===== */
+.feed-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:46px;flex-wrap:wrap;gap:16px;}
+.feed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:2px;}
+.f-card{background:var(--deep);padding:26px;border:1px solid rgba(255,255,255,.04);position:relative;overflow:hidden;transition:all .3s;cursor:pointer;}
+.f-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 55%,rgba(255,69,0,.04));opacity:0;transition:opacity .3s;}
+.f-card:hover::after{opacity:1;}
+.f-card:hover{border-color:rgba(255,69,0,.18);transform:translateY(-2px);}
+.f-top{display:flex;align-items:center;gap:11px;margin-bottom:18px;}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.65rem;font-weight:900;flex-shrink:0;}
+.av-a{background:radial-gradient(circle,#ff4500,#8B0000);color:#fff;}
+.av-b{background:radial-gradient(circle,#00ffd1,#006655);color:#000;}
+.av-c{background:radial-gradient(circle,#FFD700,#8B6900);color:#000;}
+.av-d{background:radial-gradient(circle,#B44FFF,#2C0054);color:#fff;}
+.av-e{background:radial-gradient(circle,#39FF14,#0a4f00);color:#000;}
+.av-ra{background:radial-gradient(circle,#FF4500,#FFD700);color:#000;box-shadow:0 0 16px var(--neon-orange);}
+.um{flex:1;}
+.uname{font-family:'Share Tech Mono',monospace;font-size:.68rem;color:#fff;}
+.urole{font-size:.6rem;color:rgba(255,255,255,.28);margin-top:2px;}
+.f-time{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.18);}
+.cat{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;padding:3px 9px;margin-bottom:10px;display:inline-block;border:1px solid;}
+.cat-obs{color:var(--neon-cyan);border-color:rgba(0,255,209,.25);background:rgba(0,255,209,.04);}
+.cat-th{color:var(--neon-yellow);border-color:rgba(255,215,0,.25);background:rgba(255,215,0,.04);}
+.cat-ev{color:var(--neon-orange);border-color:rgba(255,69,0,.25);background:rgba(255,69,0,.04);}
+.cat-db{color:var(--acid-green);border-color:rgba(57,255,20,.25);background:rgba(57,255,20,.04);}
+.f-title{font-family:'Rajdhani',sans-serif;font-size:1.05rem;font-weight:600;color:#fff;line-height:1.3;margin-bottom:9px;}
+.f-body{font-size:.82rem;color:rgba(255,255,255,.3);line-height:1.6;font-weight:300;}
+.f-footer{display:flex;align-items:center;gap:18px;margin-top:18px;padding-top:13px;border-top:1px solid rgba(255,255,255,.045);}
+.f-act{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.22);display:flex;align-items:center;gap:4px;cursor:pointer;transition:color .2s;background:none;border:none;}
+.f-act:hover{color:var(--neon-orange);}
+.f-act svg{width:11px;height:11px;}
+
+/* ===== EVENTS ===== */
+.ev-layout{display:grid;grid-template-columns:1fr 2.2fr;gap:36px;margin-top:46px;}
+.cal{background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.055);padding:26px;}
+.cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.cal-mon{font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:var(--neon-cyan);}
+.cal-nav-btn{width:26px;height:26px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);cursor:pointer;font-size:.7rem;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.cal-nav-btn:hover{background:rgba(0,255,209,.08);color:var(--neon-cyan);border-color:var(--neon-cyan);}
+.cal-dnames{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px;}
+.cal-dn{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:rgba(255,255,255,.18);text-align:center;padding:3px 0;}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.28);cursor:pointer;transition:all .2s;position:relative;}
+.cal-d:hover{background:rgba(255,255,255,.04);color:#fff;}
+.cal-d.has-ev{color:var(--neon-orange);}
+.cal-d.has-ev::after{content:'';position:absolute;bottom:3px;width:3px;height:3px;background:var(--neon-orange);border-radius:50%;box-shadow:0 0 4px var(--neon-orange);}
+.cal-d.today{background:rgba(255,69,0,.12);color:var(--neon-orange);border:1px solid rgba(255,69,0,.28);}
+.ev-list{display:flex;flex-direction:column;gap:10px;}
+.ev-item{display:grid;grid-template-columns:72px 1fr auto;gap:18px;align-items:center;padding:18px;border:1px solid rgba(255,255,255,.045);background:rgba(255,255,255,.015);transition:all .3s;cursor:pointer;}
+.ev-item:hover{border-color:rgba(0,255,209,.2);background:rgba(0,255,209,.025);}
+.ev-date{text-align:center;}
+.ev-day{font-family:'Orbitron',sans-serif;font-size:1.7rem;font-weight:900;color:var(--neon-cyan);line-height:1;}
+.ev-mon{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.25);letter-spacing:.2em;}
+.ev-ttl{font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:600;color:#fff;margin-bottom:5px;}
+.ev-meta{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.25);display:flex;gap:14px;flex-wrap:wrap;}
+.ev-badge{font-family:'Share Tech Mono',monospace;font-size:.5rem;padding:5px 10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid;white-space:nowrap;}
+.badge-up{color:var(--neon-yellow);border-color:rgba(255,215,0,.25);}
+.badge-virt{color:var(--neon-cyan);border-color:rgba(0,255,209,.25);}
+.badge-live{color:var(--acid-green);border-color:rgba(57,255,20,.25);animation:blink 1.5s step-end infinite;}
+
+/* ===== MEMBERS ===== */
+.mem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:2px;margin-top:46px;}
+.mem-card{padding:22px 18px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.01);text-align:center;transition:all .3s;cursor:pointer;position:relative;overflow:hidden;}
+.mem-card::before{content:'';position:absolute;top:-100%;left:0;right:0;height:100%;background:linear-gradient(180deg,transparent,rgba(255,69,0,.07));transition:top .3s;}
+.mem-card:hover::before{top:0;}
+.mem-card:hover{border-color:rgba(255,69,0,.18);}
+.mem-av{width:58px;height:58px;border-radius:50%;margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:900;position:relative;}
+.online-dot::after{content:'';position:absolute;bottom:2px;right:2px;width:9px;height:9px;background:var(--acid-green);border-radius:50%;border:2px solid var(--void);box-shadow:0 0 7px var(--acid-green);}
+.mem-name{font-family:'Rajdhani',sans-serif;font-size:.85rem;font-weight:600;color:#fff;margin-bottom:3px;}
+.mem-role{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(255,255,255,.22);letter-spacing:.1em;text-transform:uppercase;}
+.rank{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:.48rem;padding:2px 7px;margin-top:7px;letter-spacing:.1em;}
+.rank-cmd{background:rgba(255,69,0,.12);color:var(--neon-orange);border:1px solid rgba(255,69,0,.28);}
+.rank-el{background:rgba(0,255,209,.08);color:var(--neon-cyan);border:1px solid rgba(0,255,209,.18);}
+.rank-sr{background:rgba(255,215,0,.07);color:var(--neon-yellow);border:1px solid rgba(255,215,0,.18);}
+.rank-mb{background:rgba(255,255,255,.04);color:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.07);}
+
+/* ===== SKYWATCH ===== */
+.sky-grid{display:grid;grid-template-columns:2fr 1fr;gap:36px;margin-top:46px;}
+.sky-map-wrap{background:#000;border:1px solid rgba(0,255,209,.12);position:relative;overflow:hidden;min-height:380px;}
+#sky-canvas{width:100%;height:380px;display:block;}
+.sky-hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:14px;pointer-events:none;}
+.sky-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(0,255,209,.45);letter-spacing:.2em;}
+.sky-coord{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(0,255,209,.28);align-self:flex-end;}
+.obj-list{display:flex;flex-direction:column;gap:9px;}
+.obj-item{padding:14px;border:1px solid rgba(255,255,255,.045);background:rgba(255,255,255,.01);cursor:pointer;transition:all .2s;}
+.obj-item:hover{border-color:rgba(255,215,0,.25);background:rgba(255,215,0,.025);}
+.obj-name{font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;color:var(--neon-yellow);margin-bottom:3px;}
+.obj-type{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:rgba(255,255,255,.22);letter-spacing:.12em;margin-bottom:7px;}
+.vis-row{display:flex;align-items:center;gap:5px;}
+.vis-bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.vis-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--neon-yellow),var(--neon-orange));box-shadow:0 0 7px var(--neon-yellow);}
+.vis-pct{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:var(--neon-yellow);width:28px;text-align:right;}
+
+/* ===== GALLERY ===== */
+.gallery-intro{max-width:680px;margin-bottom:50px;}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:3px;}
+.gal-item{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,rgba(255,69,0,.05),rgba(0,255,209,.05));border:1px solid rgba(255,255,255,.05);overflow:hidden;cursor:pointer;transition:all .3s;}
+.gal-item:hover{border-color:rgba(0,255,209,.3);transform:scale(1.01);}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s;filter:grayscale(30%) contrast(1.1);}
+.gal-item:hover img{transform:scale(1.06);filter:grayscale(0%) contrast(1.2);}
+.gal-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,5,.8) 0%,transparent 50%);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end;padding:16px;}
+.gal-item:hover .gal-overlay{opacity:1;}
+.gal-label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--neon-cyan);letter-spacing:.15em;}
+.gal-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,rgba(180,79,255,.05),rgba(0,255,209,.04));}
+.gal-icon{font-size:2.5rem;opacity:.25;}
+.gal-ph-txt{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.2em;text-align:center;max-width:160px;line-height:1.6;}
+.upload-zone{border:2px dashed rgba(255,255,255,.1);padding:40px;text-align:center;cursor:pointer;transition:all .3s;margin-top:30px;}
+.upload-zone:hover{border-color:var(--neon-cyan);background:rgba(0,255,209,.025);}
+.upload-zone input{display:none;}
+.upload-txt{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.3);letter-spacing:.2em;line-height:2;}
+.upload-sub{font-size:.6rem;color:rgba(255,255,255,.18);margin-top:6px;}
+
+/* Uganda Space Week banner */
+.space-week-banner{background:linear-gradient(135deg,rgba(255,69,0,.08),rgba(0,255,209,.06),rgba(180,79,255,.05));border:1px solid rgba(255,69,0,.2);padding:30px 36px;margin-bottom:50px;position:relative;overflow:hidden;display:flex;align-items:center;gap:30px;}
+.space-week-banner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FF4500' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
+.sw-year{font-family:'Orbitron',sans-serif;font-size:3.5rem;font-weight:900;color:var(--neon-orange);text-shadow:0 0 40px var(--neon-orange);line-height:1;flex-shrink:0;}
+.sw-info{}
+.sw-title{font-family:'Orbitron',sans-serif;font-size:1.2rem;font-weight:900;color:#fff;margin-bottom:8px;}
+.sw-sub{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.35);letter-spacing:.15em;line-height:1.8;}
+.sw-badge{position:absolute;top:16px;right:16px;background:var(--neon-orange);color:#000;font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:900;padding:6px 14px;letter-spacing:.15em;}
+
+/* ===== GAME PAGE ===== */
+#game-canvas-wrap{position:relative;margin-top:30px;}
+#game-canvas{background:#000;border:1px solid rgba(0,255,209,.2);display:block;cursor:crosshair;image-rendering:pixelated;}
+.game-ui{display:flex;align-items:center;justify-content:space-between;padding:14px 0;margin-bottom:10px;flex-wrap:wrap;gap:12px;}
+.game-stat{font-family:'Orbitron',monospace;font-size:.8rem;color:var(--neon-cyan);}
+.game-stat span{color:var(--neon-orange);font-size:1.1rem;}
+.game-lives{display:flex;gap:5px;}
+.life-icon{color:var(--neon-orange);font-size:.9rem;text-shadow:0 0 8px var(--neon-orange);}
+.game-instructions{padding:16px 20px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);font-family:'Share Tech Mono',monospace;font-size:.62rem;color:rgba(255,255,255,.3);letter-spacing:.12em;line-height:2;margin-top:12px;}
+#game-overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,5,.85);z-index:10;}
+#game-overlay .go-title{font-family:'Orbitron',sans-serif;font-size:2.5rem;font-weight:900;color:var(--neon-orange);text-shadow:0 0 40px var(--neon-orange);margin-bottom:16px;}
+#game-overlay .go-sub{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.4);letter-spacing:.25em;margin-bottom:36px;text-align:center;}
+.game-hiscores{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.3);margin-bottom:30px;text-align:center;line-height:2;}
+.game-hiscores .hs-title{color:var(--neon-yellow);margin-bottom:8px;}
+
+/* ===== MOVIES ===== */
+.movies-filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px;}
+.movie-tag{font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;padding:8px 16px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.35);cursor:pointer;transition:all .25s;}
+.movie-tag.active,.movie-tag:hover{border-color:var(--neon-cyan);color:var(--neon-cyan);background:rgba(0,255,209,.05);}
+.movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.movie-card{cursor:pointer;position:relative;transition:transform .3s;}
+.movie-card:hover{transform:translateY(-4px);}
+.movie-poster{aspect-ratio:2/3;border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(255,69,0,.08),rgba(0,255,209,.05));}
+.movie-poster-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;}
+.movie-year-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,5,.8);border:1px solid rgba(255,215,0,.3);color:var(--neon-yellow);font-family:'Share Tech Mono',monospace;font-size:.52rem;padding:3px 8px;letter-spacing:.1em;}
+.movie-rating{position:absolute;top:10px;right:10px;background:rgba(0,0,5,.8);color:var(--acid-green);font-family:'Share Tech Mono',monospace;font-size:.55rem;padding:3px 8px;}
+.movie-emoji{font-size:3rem;margin-bottom:14px;opacity:.8;}
+.movie-title-poster{font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:900;color:#fff;line-height:1.3;text-align:center;}
+.movie-meta{padding:12px 0 0;}
+.movie-name{font-family:'Rajdhani',sans-serif;font-size:.9rem;font-weight:600;color:#fff;margin-bottom:4px;}
+.movie-info{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.25);letter-spacing:.1em;}
+.movie-genres{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.mg{font-family:'Share Tech Mono',monospace;font-size:.48rem;color:rgba(0,255,209,.5);border:1px solid rgba(0,255,209,.15);padding:2px 6px;letter-spacing:.1em;}
+.movie-hover-overlay{position:absolute;inset:0;background:rgba(0,0,5,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;opacity:0;transition:opacity .3s;text-align:center;}
+.movie-card:hover .movie-hover-overlay{opacity:1;}
+.mh-desc{font-family:'Rajdhani',sans-serif;font-size:.82rem;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:16px;font-weight:300;}
+.mh-watch{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--neon-orange);letter-spacing:.2em;border:1px solid rgba(255,69,0,.4);padding:8px 16px;}
+
+/* ===== FACTS PAGE ===== */
+.facts-hero{padding:60px 0;text-align:center;}
+.facts-intro{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:rgba(0,255,209,.5);letter-spacing:.25em;max-width:600px;margin:0 auto 60px;text-align:center;line-height:2;}
+.facts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:2px;}
+.fact-card{padding:32px;border:1px solid rgba(255,255,255,.045);background:rgba(255,255,255,.015);position:relative;overflow:hidden;transition:all .3s;cursor:default;}
+.fact-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--neon-orange),var(--neon-cyan));transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.fact-card:hover::before{transform:scaleX(1);}
+.fact-card:hover{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.08);}
+.fact-num{font-family:'Orbitron',sans-serif;font-size:3rem;font-weight:900;color:rgba(255,69,0,.15);position:absolute;top:16px;right:20px;line-height:1;}
+.fact-icon{font-size:1.8rem;margin-bottom:14px;}
+.fact-title{font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;color:var(--neon-orange);margin-bottom:12px;letter-spacing:.05em;}
+.fact-body{font-size:.9rem;color:rgba(255,255,255,.45);line-height:1.8;font-weight:300;}
+.fact-body strong{color:rgba(255,255,255,.7);font-weight:600;}
+.fact-source{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(255,255,255,.18);letter-spacing:.15em;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04);}
+.ug-flag-bar{display:flex;height:4px;width:40px;gap:0;margin-bottom:16px;overflow:hidden;}
+.ug-f1{flex:1;background:#000000;}
+.ug-f2{flex:1;background:#FCDC04;}
+.ug-f3{flex:1;background:#D90000;}
+.ug-f4{flex:1;background:#000000;}
+.ug-f5{flex:1;background:#FCDC04;}
+.ug-f6{flex:1;background:#D90000;}
+
+/* ===== FOOTER ===== */
+footer{border-top:1px solid rgba(255,255,255,.045);padding:60px 40px 36px;max-width:1380px;margin:0 auto;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:50px;margin-bottom:50px;}
+.f-brand .f-logo{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:var(--neon-orange);text-shadow:0 0 18px var(--neon-orange);margin-bottom:14px;}
+.f-brand p{font-size:.82rem;color:rgba(255,255,255,.28);line-height:1.75;font-weight:300;max-width:260px;}
+.f-col h4{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.25);letter-spacing:.3em;text-transform:uppercase;margin-bottom:18px;}
+.f-col ul{list-style:none;}
+.f-col li{margin-bottom:9px;}
+.f-col a{font-size:.82rem;color:rgba(255,255,255,.35);text-decoration:none;transition:color .2s;font-weight:300;}
+.f-col a:hover{color:var(--neon-cyan);}
+.f-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid rgba(255,255,255,.04);flex-wrap:wrap;gap:14px;}
+.f-copy{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.13);letter-spacing:.1em;}
+.sig-bars{display:flex;align-items:flex-end;gap:3px;height:14px;}
+.sig-bars span{width:4px;background:var(--acid-green);border-radius:1px;}
+
+/* ===== CHATBOT ===== */
+#chat-bubble{position:fixed;bottom:28px;right:28px;z-index:9000;}
+.chat-trigger{width:58px;height:58px;background:linear-gradient(135deg,var(--neon-orange),#ff6b20);border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(255,69,0,.4);font-size:1.3rem;transition:all .3s;animation:chat-pulse 3s ease-in-out infinite;}
+@keyframes chat-pulse{0%,100%{box-shadow:0 0 20px rgba(255,69,0,.35);}50%{box-shadow:0 0 45px rgba(255,69,0,.6),0 0 60px rgba(255,69,0,.2);}}
+.chat-trigger:hover{transform:scale(1.1);box-shadow:0 0 50px rgba(255,69,0,.6);}
+.chat-panel{position:absolute;bottom:72px;right:0;width:340px;background:rgba(2,2,16,.97);border:1px solid rgba(255,69,0,.25);backdrop-filter:blur(20px);display:none;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,.6),0 0 30px rgba(255,69,0,.06);}
+.chat-panel.open{display:flex;animation:panel-open .25s ease;}
+@keyframes panel-open{from{opacity:0;transform:translateY(14px) scale(.97);}to{opacity:1;transform:none;}}
+.chat-header{padding:16px 18px;background:linear-gradient(135deg,rgba(255,69,0,.12),rgba(0,255,209,.06));border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px;}
+.chat-av{width:36px;height:36px;background:radial-gradient(circle,var(--neon-orange),#8B0000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.chat-head-info{flex:1;}
+.chat-head-name{font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:900;color:var(--neon-orange);}
+.chat-head-sub{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(255,255,255,.3);letter-spacing:.1em;margin-top:2px;}
+.chat-close{background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:1rem;transition:color .2s;}
+.chat-close:hover{color:var(--neon-orange);}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;max-height:320px;scrollbar-width:thin;scrollbar-color:rgba(255,69,0,.3) transparent;}
+.chat-messages::-webkit-scrollbar{width:3px;}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,69,0,.3);border-radius:2px;}
+.msg{max-width:85%;padding:10px 13px;border-radius:0;font-size:.78rem;line-height:1.55;font-weight:300;}
+.msg-bot{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.65);align-self:flex-start;border-left:2px solid var(--neon-orange);}
+.msg-user{background:rgba(255,69,0,.1);border:1px solid rgba(255,69,0,.18);color:rgba(255,255,255,.75);align-self:flex-end;border-right:2px solid var(--neon-cyan);}
+.msg-time{font-family:'Share Tech Mono',monospace;font-size:.48rem;color:rgba(255,255,255,.18);margin-top:5px;}
+.chat-suggestions{padding:10px 14px;display:flex;flex-wrap:wrap;gap:5px;border-top:1px solid rgba(255,255,255,.04);}
+.sug-btn{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(0,255,209,.55);border:1px solid rgba(0,255,209,.15);background:transparent;padding:5px 9px;cursor:pointer;transition:all .2s;letter-spacing:.1em;}
+.sug-btn:hover{background:rgba(0,255,209,.08);color:var(--neon-cyan);}
+.chat-input-row{padding:12px;display:flex;gap:8px;border-top:1px solid rgba(255,255,255,.06);}
+.chat-input{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'Share Tech Mono',monospace;font-size:.68rem;padding:10px 12px;outline:none;transition:border-color .2s;}
+.chat-input:focus{border-color:rgba(0,255,209,.3);}
+.chat-input::placeholder{color:rgba(255,255,255,.2);}
+.chat-send{background:var(--neon-orange);border:none;color:#000;font-family:'Orbitron',monospace;font-size:.65rem;font-weight:900;padding:10px 14px;cursor:pointer;transition:all .3s;}
+.chat-send:hover{box-shadow:0 0 20px var(--neon-orange);}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:8px 0;}
+.typing-dot{width:5px;height:5px;background:rgba(255,69,0,.5);border-radius:50%;animation:typing 1.2s ease-in-out infinite;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes typing{0%,80%,100%{transform:scale(1);opacity:.5;}40%{transform:scale(1.4);opacity:1;}}
+.chat-unread{position:absolute;top:-3px;right:-3px;width:17px;height:17px;background:var(--acid-green);border-radius:50%;font-family:'Orbitron',monospace;font-size:.48rem;font-weight:900;color:#000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px var(--acid-green);}
+
+/* ===== MODAL ===== */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,5,.92);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
+.modal-bg.on{display:flex;}
+.modal-box{background:var(--deep);border:1px solid rgba(255,69,0,.25);padding:38px;max-width:460px;width:92%;position:relative;animation:fadeUp .3s ease;box-shadow:0 0 80px rgba(255,69,0,.08);}
+.modal-x{position:absolute;top:14px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:1.1rem;cursor:pointer;}
+.modal-x:hover{color:var(--neon-orange);}
+.modal-title{font-family:'Orbitron',sans-serif;font-size:1.15rem;font-weight:900;color:var(--neon-orange);margin-bottom:6px;}
+.modal-sub{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.18);letter-spacing:.2em;margin-bottom:26px;}
+.m-input{width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:.72rem;color:#fff;margin-bottom:10px;outline:none;transition:border-color .2s;}
+.m-input:focus{border-color:rgba(0,255,209,.35);}
+.m-input::placeholder{color:rgba(255,255,255,.18);}
+.m-btn{width:100%;padding:13px;background:var(--neon-orange);color:#000;font-family:'Orbitron',sans-serif;font-size:.68rem;font-weight:900;letter-spacing:.2em;border:none;cursor:pointer;transition:all .3s;margin-top:7px;}
+.m-btn:hover{box-shadow:0 0 28px var(--neon-orange);}
+.m-note{font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(255,255,255,.18);text-align:center;margin-top:14px;line-height:1.7;}
+
+/* ===== MEDIA QUERIES ===== */
+/* ===== HAMBURGER / MOBILE NAV ===== */
+#ham-btn{display:none;flex-direction:column;gap:5px;background:none;border:1px solid rgba(255,255,255,.12);padding:9px 10px;cursor:pointer;transition:border-color .25s;}
+#ham-btn:hover{border-color:var(--neon-cyan);}
+#ham-btn span{display:block;width:20px;height:1.5px;background:rgba(255,255,255,.6);transition:all .3s;}
+#ham-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+#ham-btn.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+#ham-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+.mobile-menu{display:none;position:fixed;top:62px;left:0;right:0;z-index:999;background:rgba(0,0,5,.98);border-bottom:1px solid rgba(255,69,0,.2);backdrop-filter:blur(20px);padding:10px 0;flex-direction:column;}
+.mobile-menu.open{display:flex;animation:slideDown .25s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.mobile-menu a{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.5);letter-spacing:.25em;text-transform:uppercase;padding:14px 28px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:color .2s,background .2s;display:flex;align-items:center;gap:10px;}
+.mobile-menu a:hover,.mobile-menu a.active-link{color:var(--neon-cyan);background:rgba(0,255,209,.04);}
+.mobile-menu a::before{content:'▸';color:var(--neon-orange);font-size:.55rem;}
+.mobile-sound-row{padding:12px 28px;display:flex;align-items:center;gap:14px;border-top:1px solid rgba(255,255,255,.04);}
+/* Chat panel mobile adjustment */
+@media(max-width:480px){
+  .chat-panel{width:calc(100vw - 40px);right:-14px;}
+}
+@media(max-width:1000px){
+  .mission-grid,.sky-grid,.ev-layout{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+  .nav-links{display:none;}
+  #ham-btn{display:flex;}
+  #sound-btn{display:none;}
+}
+@media(max-width:700px){
+  .movies-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+  .mem-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .facts-grid{grid-template-columns:1fr;}
+  .feed-grid{grid-template-columns:1fr;}
+  .ev-layout{grid-template-columns:1fr;}
+  .space-week-banner{flex-direction:column;gap:16px;}
+  .game-ui{gap:8px;}
+  .game-stat{font-size:.65rem;}
+}
+@media(max-width:600px){
+  .sec{padding:80px 16px 60px;}
+  nav{padding:0 14px;}
+  .footer-grid{grid-template-columns:1fr;}
+  .sw-year{font-size:2.5rem;}
+  .hero-cta{flex-direction:column;align-items:center;width:100%;}
+  .hero-cta .btn-o,.hero-cta .btn-c{width:100%;max-width:280px;text-align:center;}
+  #game-canvas{width:100%!important;height:auto!important;}
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div><div id="cur2"></div>
+<canvas id="bg-canvas"></canvas>
+<div class="scan-overlay"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home');closeMobileMenu()">SJU <span>▸ SPACE JUNKIES UGANDA</span></div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" class="active-link" id="nl-home">HOME</a></li>
+    <li><a onclick="showPage('gallery')" id="nl-gallery">GALLERY</a></li>
+    <li><a onclick="showPage('game')" id="nl-game">ARCADE</a></li>
+    <li><a onclick="showPage('movies')" id="nl-movies">MOVIES</a></li>
+    <li><a onclick="showPage('facts')" id="nl-facts">UG FACTS</a></li>
+    <li><a onclick="showPage('events')" id="nl-events">EVENTS</a></li>
+    <li><a onclick="showPage('members')" id="nl-members">CREW</a></li>
+    <li><a onclick="showPage('skywatch')" id="nl-skywatch">SKYWATCH</a></li>
+  </ul>
+  <div class="nav-right">
+    <button id="sound-btn" onclick="toggleSound()">🔊 SOUND ON</button>
+    <div class="live-dot"></div>
+    <button id="ham-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU DRAWER -->
+<div class="mobile-menu" id="mobile-menu">
+  <a onclick="showPage('home');closeMobileMenu()">&#127968; HOME</a>
+  <a onclick="showPage('gallery');closeMobileMenu()">&#128444; GALLERY</a>
+  <a onclick="showPage('game');closeMobileMenu()">&#127918; ARCADE</a>
+  <a onclick="showPage('movies');closeMobileMenu()">&#127916; MOVIES</a>
+  <a onclick="showPage('facts');closeMobileMenu()">&#127758; UG FACTS</a>
+  <a onclick="showPage('events');closeMobileMenu()">&#128197; EVENTS</a>
+  <a onclick="showPage('members');closeMobileMenu()">&#128105;&#8205;&#128640; CREW</a>
+  <a onclick="showPage('skywatch');closeMobileMenu()">&#128301; SKYWATCH</a>
+  <div class="mobile-sound-row">
+    <button id="sound-btn-mobile" onclick="toggleSound()" style="background:none;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.12em;padding:8px 14px;cursor:pointer;">&#128266; SOUND ON</button>
+    <div class="live-dot"></div>
+  </div>
+</div>
+
+<!-- =================== HOME PAGE =================== -->
+<div class="page active" id="home">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="planet-wrap"><div class="planet"></div><div class="planet-ring"></div></div>
+    <div class="hero-tag">⚡ Est. January 2025 // Broadcasting from Kampala, Uganda — 0.3136°N 32.5811°E</div>
+    <h1 class="hero-title">
+      <span class="ht1">SPACE</span>
+      <span class="ht2" data-t="JUNKIES">JUNKIES</span>
+      <span class="ht3">UGANDA</span>
+    </h1>
+    <p class="hero-sub">We stargaze from the equator. We dream in rocket fuel. 135 members strong and growing. East Africa's most obsessive space community — born in Kampala, reaching for the cosmos.</p>
+    <div class="hero-cta">
+      <button class="btn-o" onclick="openModal()">JOIN THE CREW</button>
+      <button class="btn-c" onclick="showPage('game')">PLAY ASTEROID HUNTER</button>
+    </div>
+    <div class="scroll-hint"><div class="scroll-line"></div><div class="scroll-txt">SCROLL DOWN</div></div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-label">LIVE</div>
+    <div class="ticker-inner">
+      <div class="tick-item">UGANDA SPACE WEEK 2025 — HUGE SUCCESS — RECAP IN GALLERY</div>
+      <div class="tick-item">ISS VISIBLE OVER KAMPALA — MAR 2, 22:14 EAT</div>
+      <div class="tick-item">MARS OPPOSITION — 78 DAYS AWAY</div>
+      <div class="tick-item">NEXT STARGAZING MEETUP — KOLOLO HILL MAR 8</div>
+      <div class="tick-item">135 MEMBERS AND GROWING — JOIN TODAY</div>
+      <div class="tick-item">SATURN RINGS EDGE-ON — OPTIMAL WINDOW THIS WEEK</div>
+      <div class="tick-item">DARK SKY EXPEDITION — BWINDI MARCH 29</div>
+      <div class="tick-item">FOUNDER: RONNIE ATUHAIRE // COMMUNITY OPEN TO ALL</div>
+      <div class="tick-item">UGANDA SPACE WEEK 2025 — HUGE SUCCESS — RECAP IN GALLERY</div>
+      <div class="tick-item">ISS VISIBLE OVER KAMPALA — MAR 2, 22:14 EAT</div>
+      <div class="tick-item">MARS OPPOSITION — 78 DAYS AWAY</div>
+      <div class="tick-item">NEXT STARGAZING MEETUP — KOLOLO HILL MAR 8</div>
+      <div class="tick-item">135 MEMBERS AND GROWING — JOIN TODAY</div>
+      <div class="tick-item">SATURN RINGS EDGE-ON — OPTIMAL WINDOW THIS WEEK</div>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <div class="sec">
+    <div class="mission-grid">
+      <div>
+        <div class="sec-tag">01 // ABOUT</div>
+        <h2 class="sec-title">We Were Never <span class="a">Meant</span> To Stop Here</h2>
+        <p class="sec-body">Space Junkies Uganda is East Africa's most passionate space enthusiast community. Launched in January 2025 by Ronnie Atuhaire, we bring together astronomers, rocket dreamers, sci-fi lovers, astrophotographers, and anyone who looks up and feels the pull.</p>
+        <p class="sec-body">We're open to absolutely everyone — no degrees required, no equipment needed. Just wonder, curiosity, and a willingness to look at the night sky differently.</p>
+
+        <div class="founder-card">
+          <div class="founder-name">RONNIE ATUHAIRE</div>
+          <div class="founder-sub">FOUNDER &amp; MISSION COMMANDER // SPACE JUNKIES UGANDA</div>
+          <p style="font-size:.82rem;color:rgba(255,255,255,.35);margin-top:12px;font-weight:300;line-height:1.7;">"We started this because Ugandans deserve to be part of the space story — not just as spectators, but as dreamers, builders, and explorers."</p>
+        </div>
+
+        <div class="stats-2x2" style="margin-top:24px;">
+          <div class="stat-card"><div class="stat-num" id="c-mem">0</div><div class="stat-lbl">CREW MEMBERS</div></div>
+          <div class="stat-card"><div class="stat-num" id="c-ev">0</div><div class="stat-lbl">EVENTS HOSTED</div></div>
+          <div class="stat-card"><div class="stat-num" id="c-obs">0</div><div class="stat-lbl">OBSERVATIONS</div></div>
+          <div class="stat-card"><div class="stat-num" id="c-nights">0</div><div class="stat-lbl">STARGAZING NIGHTS</div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="terminal-box">
+          <div class="t-dots"><span></span><span></span><span></span></div>
+          <div class="t-bar">TERMINAL // SJU-NET v3.1</div>
+          <div class="t-body">
+            <div>> <span class="t-prompt">sju-net</span> --init</div>
+            <div class="t-dim">  Connecting from Kampala, Uganda...</div>
+            <div class="t-dim">  Coords: 0.3136°N / 32.5811°E / 1,189m</div>
+            <div class="t-dim">  Sky quality: <span style="color:var(--acid-green);">8.1/10 EXCELLENT ✓</span></div>
+            <div>&nbsp;</div>
+            <div>> <span class="t-prompt">sju-net</span> --status community</div>
+            <div>  Founded: <span style="color:var(--neon-yellow);">January 2025</span></div>
+            <div>  Founder: <span style="color:var(--plasma);">Ronnie Atuhaire</span></div>
+            <div>  Members: <span style="color:var(--acid-green);">135 &amp; growing</span></div>
+            <div>  Uganda Space Week: <span style="color:var(--neon-orange);">2025 ✓ DONE</span></div>
+            <div>  Next event: <span style="color:var(--neon-cyan);">MAR 8 — Kololo Hill</span></div>
+            <div>  ISS pass tonight: <span style="color:var(--neon-yellow);">22:14 EAT</span></div>
+            <div>&nbsp;</div>
+            <div>> <span class="t-prompt">awaiting transmission</span> <span class="t-cursor"></span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding:20px;border:1px solid rgba(255,69,0,.15);background:rgba(255,69,0,.04);">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.25);letter-spacing:.2em;margin-bottom:14px;">OPEN TO EVERYONE</div>
+          <p style="font-size:.88rem;color:rgba(255,255,255,.42);line-height:1.75;font-weight:300;">Farmers, teachers, students, engineers, writers, children — if you have curiosity about space, you belong here. No background required. Just show up.</p>
+          <button class="btn-o" style="margin-top:18px;font-size:.65rem;padding:12px 24px;" onclick="openModal()">JOIN FREE →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider" style="max-width:1380px;margin:0 auto;"></div>
+
+  <!-- FEED PREVIEW -->
+  <div class="sec">
+    <div class="feed-header">
+      <div><div class="sec-tag">02 // COMMUNITY</div><h2 class="sec-title">Latest <span class="a">Transmissions</span></h2></div>
+      <button class="btn-c" style="font-size:.62rem;padding:11px 22px;" onclick="openModal()">+ POST</button>
+    </div>
+    <div class="feed-grid">
+      <div class="f-card">
+        <div class="f-top"><div class="av av-ra">RA</div><div class="um"><div class="uname">Ronnie_Atuhaire</div><div class="urole">Founder // Space Junkies Uganda</div></div><div class="f-time">1h ago</div></div>
+        <div class="cat cat-ev">ANNOUNCEMENT</div>
+        <div class="f-title">Uganda Space Week 2025 — We Did It. And We're Coming Back Bigger.</div>
+        <div class="f-body">What an incredible week. Hundreds of Ugandans came out to stargaze, learn, and dream. We proved that space belongs to everyone, including us. Thank you to every single crew member who showed up.</div>
+        <div class="f-footer"><button class="f-act" onclick="likeIt(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>212</span></button><button class="f-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>89</span></button></div>
+      </div>
+      <div class="f-card">
+        <div class="f-top"><div class="av av-a">KO</div><div class="um"><div class="uname">Kato_Omara</div><div class="urole">Amateur Astronomer // Jinja</div></div><div class="f-time">3h ago</div></div>
+        <div class="cat cat-obs">OBSERVATION</div>
+        <div class="f-title">Jupiter's Great Red Spot From a Kampala Rooftop — 10" Dob</div>
+        <div class="f-body">Seeing was 9/10 last night. GRS transiting at 21:30 EAT. Two Galilean moons in transit simultaneously. Absolutely breathtaking. The equatorial position gives us views that northern hemisphere observers dream about.</div>
+        <div class="f-footer"><button class="f-act" onclick="likeIt(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>41</span></button><button class="f-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>12</span></button></div>
+      </div>
+      <div class="f-card">
+        <div class="f-top"><div class="av av-b">AN</div><div class="um"><div class="uname">Apio_Nakato</div><div class="urole">Physics Student // Makerere</div></div><div class="f-time">6h ago</div></div>
+        <div class="cat cat-th">THEORY</div>
+        <div class="f-title">Is the Universe a Mathematical Object? — Tegmark &amp; Ugandan Cosmology</div>
+        <div class="f-body">Been reading Tegmark's Mathematical Universe Hypothesis and finding eerie parallels in traditional Ugandan oral cosmogony. The universe as cyclical pattern. I'll write this up properly for the next meetup.</div>
+        <div class="f-footer"><button class="f-act" onclick="likeIt(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>67</span></button><button class="f-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>31</span></button></div>
+      </div>
+      <div class="f-card">
+        <div class="f-top"><div class="av av-c">MK</div><div class="um"><div class="uname">Muwanguzi_K</div><div class="urole">Telescope Builder // Entebbe</div></div><div class="f-time">1d ago</div></div>
+        <div class="cat cat-ev">EXPEDITION</div>
+        <div class="f-title">Lake Mburo Dark Sky Night — The Milky Way Made People Cry</div>
+        <div class="f-body">34 members. 6 telescopes. Zero light pollution. The Milky Way was so bright that newcomers thought they were looking at a cloud. That reaction made every kilometer of the drive worth it.</div>
+        <div class="f-footer"><button class="f-act" onclick="likeIt(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>134</span></button><button class="f-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>48</span></button></div>
+      </div>
+      <div class="f-card">
+        <div class="f-top"><div class="av av-d">SR</div><div class="um"><div class="uname">Ssekandi_R</div><div class="urole">Sci-Fi Writer // Kampala</div></div><div class="f-time">2d ago</div></div>
+        <div class="cat cat-db">DEBATE</div>
+        <div class="f-title">Africa's Space Revolution Is Being Slept On — A Wake-Up Call</div>
+        <div class="f-body">Ethiopia, Kenya, Egypt, Rwanda — the continent is moving fast. But African space narratives are still written elsewhere. What does a genuinely Ugandan space program look like? Let's build it in our imaginations first.</div>
+        <div class="f-footer"><button class="f-act" onclick="likeIt(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>98</span></button><button class="f-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>62</span></button></div>
+      </div>
+      <div class="f-card">
+        <div class="f-top"><div class="av av-e">BN</div><div class="um"><div class="uname">Babirye_N</div><div class="urole">Astrophotographer // Mukono</div></div><div class="f-time">3d ago</div></div>
+        <div class="cat cat-obs">ASTROPHOTO</div>
+        <div class="f-title">Andromeda Galaxy From Mukono — 3.5hrs Exposure, DIY Star Tracker</div>
+        <div class="f-body">Built a manual star tracker for under 80,000 UGX (~$21). Modified DSLR, 72mm refractor. 3.5 hours total exposure across two nights. The Andromeda Galaxy from Uganda. Let that sink in.</div>
+        <div class="f-footer"><button class="f-act" onclick="likeIt(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span>189</span></button><button class="f-act"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>55</span></button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider" style="max-width:1380px;margin:0 auto;"></div>
+
+  <!-- EVENTS (on home) -->
+  <div class="sec" id="events">
+    <div class="sec-tag">03 // CALENDAR</div>
+    <h2 class="sec-title">Upcoming <span class="a">Events</span></h2>
+    <div class="ev-layout">
+      <div><div class="cal">
+        <div class="cal-hdr"><div class="cal-mon">MARCH 2026</div><div style="display:flex;gap:6px;"><button class="cal-nav-btn">‹</button><button class="cal-nav-btn">›</button></div></div>
+        <div class="cal-dnames"><div class="cal-dn">SUN</div><div class="cal-dn">MON</div><div class="cal-dn">TUE</div><div class="cal-dn">WED</div><div class="cal-dn">THU</div><div class="cal-dn">FRI</div><div class="cal-dn">SAT</div></div>
+        <div class="cal-g" id="cal-g"></div>
+      </div></div>
+      <div class="ev-list">
+        <div class="ev-item"><div class="ev-date"><div class="ev-day">08</div><div class="ev-mon">MAR</div></div><div><div class="ev-ttl">Kololo Hill Stargazing Night</div><div class="ev-meta"><span>19:30 EAT</span><span>Kololo, Kampala</span><span>28 attending</span></div></div><div class="ev-badge badge-up">UPCOMING</div></div>
+        <div class="ev-item"><div class="ev-date"><div class="ev-day">14</div><div class="ev-mon">MAR</div></div><div><div class="ev-ttl">Pi Day: Math & The Cosmos Lecture</div><div class="ev-meta"><span>18:00 EAT</span><span>Virtual // Zoom</span><span>61 registered</span></div></div><div class="ev-badge badge-virt">VIRTUAL</div></div>
+        <div class="ev-item"><div class="ev-date"><div class="ev-day">22</div><div class="ev-mon">MAR</div></div><div><div class="ev-ttl">Telescope Building Workshop</div><div class="ev-meta"><span>10:00 EAT</span><span>Innovation Village, Ntinda</span><span>16 spots left</span></div></div><div class="ev-badge badge-up">WORKSHOP</div></div>
+        <div class="ev-item"><div class="ev-date"><div class="ev-day">29</div><div class="ev-mon">MAR</div></div><div><div class="ev-ttl">Bwindi Dark Sky Expedition</div><div class="ev-meta"><span>Depart 14:00 EAT</span><span>Bwindi, South Uganda</span><span>12 spots left</span></div></div><div class="ev-badge badge-up">EXPEDITION</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #home -->
+
+<!-- =================== GALLERY PAGE =================== -->
+<div class="page" id="gallery" style="padding-top:62px;">
+  <div class="sec">
+    <div class="sec-tag">GALLERY // VISUAL ARCHIVE</div>
+    <h2 class="sec-title">Uganda Space Week <span class="a">2025</span> & Beyond</h2>
+
+    <div class="space-week-banner">
+      <div class="sw-year">2025</div>
+      <div class="sw-info">
+        <div class="sw-title">UGANDA SPACE WEEK 2025</div>
+        <div class="sw-sub">ORGANISED BY SPACE JUNKIES UGANDA // FOUNDED BY RONNIE ATUHAIRE<br>A LANDMARK EVENT IN UGANDAN SPACE HISTORY</div>
+      </div>
+      <div class="sw-badge">HISTORIC EVENT</div>
+    </div>
+
+    <div class="gallery-grid" id="gallery-grid">
+      <!-- Slots for uploaded images + placeholders -->
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">🌌</div><div class="gal-ph-txt">UGANDA SPACE WEEK 2025 — OPENING CEREMONY</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">🔭</div><div class="gal-ph-txt">TELESCOPE GAZING SESSION — KAMPALA</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">🚀</div><div class="gal-ph-txt">MODEL ROCKET LAUNCH DEMO</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">⭐</div><div class="gal-ph-txt">MILKY WAY FROM LAKE MBURO NATIONAL PARK</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">🌙</div><div class="gal-ph-txt">LUNAR OBSERVATION NIGHT — KOLOLO HILL</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">👨‍🚀</div><div class="gal-ph-txt">THE CREW — SPACE JUNKIES UGANDA 2025</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">📡</div><div class="gal-ph-txt">SCHOOL OUTREACH — INSPIRING THE NEXT GENERATION</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">🌍</div><div class="gal-ph-txt">UGANDA SEEN FROM THE ISS — NASA IMAGERY</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+      <div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">💫</div><div class="gal-ph-txt">METEORS OVER BWINDI BUFFER ZONE</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div>
+    </div>
+
+    <label class="upload-zone" id="upload-label">
+      <input type="file" multiple accept="image/*" id="gallery-upload" onchange="handleUpload(event)">
+      <div class="upload-txt">📸 DROP YOUR SPACE PHOTOS HERE<br>or click to browse</div>
+      <div class="upload-sub">JPG, PNG, WEBP • Max 10MB each • Your photos will appear in the gallery above</div>
+    </label>
+  </div>
+</div>
+
+<!-- =================== GAME PAGE =================== -->
+<div class="page" id="game" style="padding-top:62px;">
+  <div class="sec">
+    <div class="sec-tag">ARCADE // BROWSER GAME</div>
+    <h2 class="sec-title">Asteroid Hunter <span class="a">Uganda</span></h2>
+    <p class="sec-body">Defend Kampala from the asteroid belt. Use ← → to move, SPACE to fire. Mobile: tap left/right sides of canvas to move, tap center to fire.</p>
+
+    <div class="game-ui">
+      <div class="game-stat">SCORE: <span id="g-score">0</span></div>
+      <div class="game-stat">LEVEL: <span id="g-level">1</span></div>
+      <div class="game-stat">LIVES: <span id="g-lives-txt"></span></div>
+      <div class="game-stat" style="color:var(--neon-yellow);">HI-SCORE: <span id="g-hiscore">0</span></div>
+    </div>
+
+    <div id="game-canvas-wrap">
+      <canvas id="game-canvas" width="900" height="520"></canvas>
+      <div id="game-overlay">
+        <div class="go-title" id="go-title">ASTEROID HUNTER</div>
+        <div class="go-sub" id="go-sub">DEFEND KAMPALA FROM THE COSMOS<br>← → MOVE &nbsp;&nbsp; SPACE FIRE</div>
+        <div class="game-hiscores"><div class="hs-title">TOP SCORES</div><div id="hs-list">Loading...</div></div>
+        <button class="btn-o" id="go-btn" onclick="startGame()">LAUNCH MISSION</button>
+      </div>
+    </div>
+
+    <div class="game-instructions">
+      🎮 CONTROLS: Arrow keys / WASD to move &nbsp;|&nbsp; SPACEBAR or W to fire &nbsp;|&nbsp; Mobile: tap screen sides to move, center to shoot<br>
+      🌍 Story: Asteroids are threatening Kampala. You're Uganda's last defence. How long can you survive?<br>
+      💥 Destroy asteroids to score. Bigger ones split into smaller fragments. Survive waves to level up. Don't let them reach the bottom.
+    </div>
+  </div>
+</div>
+
+<!-- =================== MOVIES PAGE =================== -->
+<div class="page" id="movies" style="padding-top:62px;">
+  <div class="sec">
+    <div class="sec-tag">MOVIE LIBRARY // SPACE CINEMA</div>
+    <h2 class="sec-title">Space <span class="a">Cinema</span> Collection</h2>
+    <p class="sec-body" style="max-width:640px;">The Space Junkies Uganda curated film library. Essential viewing for every member of the crew. Ranked, categorised and annotated with SJU commentary.</p>
+
+    <div class="movies-filter">
+      <button class="movie-tag active" onclick="filterMovies('all',this)">ALL FILMS</button>
+      <button class="movie-tag" onclick="filterMovies('sci-fi',this)">SCI-FI</button>
+      <button class="movie-tag" onclick="filterMovies('documentary',this)">DOCUMENTARY</button>
+      <button class="movie-tag" onclick="filterMovies('exploration',this)">EXPLORATION</button>
+      <button class="movie-tag" onclick="filterMovies('alien',this)">ALIEN CONTACT</button>
+      <button class="movie-tag" onclick="filterMovies('survival',this)">SURVIVAL</button>
+    </div>
+
+    <div class="movies-grid" id="movies-grid"></div>
+  </div>
+</div>
+
+<!-- =================== FACTS PAGE =================== -->
+<div class="page" id="facts" style="padding-top:62px;">
+  <div class="sec">
+    <div class="sec-tag">UGANDA // SPACE FACTS</div>
+    <h2 class="sec-title">Uganda & <span class="a">The Cosmos</span></h2>
+    <p class="facts-intro">12 things about Uganda's relationship with space that will make you see your country differently</p>
+    <div class="facts-grid" id="facts-grid"></div>
+  </div>
+</div>
+
+<!-- =================== MEMBERS PAGE =================== -->
+<div class="page" id="members" style="padding-top:62px;">
+  <div class="sec">
+    <div class="sec-tag">04 // CREW ROSTER</div>
+    <h2 class="sec-title">The <span class="a">Crew</span></h2>
+    <p class="sec-body">135 members and growing. Open to absolutely everyone. From Kampala to Mbarara, Gulu to Kabale — we are everywhere.</p>
+    <div class="mem-grid">
+      <div class="mem-card"><div class="mem-av av-ra online-dot" style="box-shadow:0 0 20px rgba(255,69,0,.4);">RA</div><div class="mem-name">Ronnie Atuhaire</div><div class="mem-role">Founder</div><div class="rank rank-cmd">COMMANDER</div></div>
+      <div class="mem-card"><div class="mem-av av-a online-dot">KO</div><div class="mem-name">Kato Omara</div><div class="mem-role">Deep Sky</div><div class="rank rank-el">ELITE</div></div>
+      <div class="mem-card"><div class="mem-av av-b">AN</div><div class="mem-name">Apio Nakato</div><div class="mem-role">Theory</div><div class="rank rank-el">ELITE</div></div>
+      <div class="mem-card"><div class="mem-av av-c online-dot">MK</div><div class="mem-name">Muwanguzi K.</div><div class="mem-role">Telescope Builder</div><div class="rank rank-el">ELITE</div></div>
+      <div class="mem-card"><div class="mem-av av-d">SR</div><div class="mem-name">Ssekandi R.</div><div class="mem-role">Sci-Fi Writer</div><div class="rank rank-sr">SENIOR</div></div>
+      <div class="mem-card"><div class="mem-av av-e online-dot">BN</div><div class="mem-name">Babirye N.</div><div class="mem-role">Astrophotographer</div><div class="rank rank-sr">SENIOR</div></div>
+      <div class="mem-card"><div class="mem-av" style="background:radial-gradient(circle,#FF69B4,#7B0040);color:#fff;">AK</div><div class="mem-name">Akello K.</div><div class="mem-role">Outreach</div><div class="rank rank-sr">SENIOR</div></div>
+      <div class="mem-card"><div class="mem-av" style="background:radial-gradient(circle,#7B68EE,#1a0060);color:#fff;">NM</div><div class="mem-name">Namukasa M.</div><div class="mem-role">Mbarara</div><div class="rank rank-mb">MEMBER</div></div>
+      <div class="mem-card" style="border-style:dashed;opacity:.5;"><div class="mem-av" style="background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);">+</div><div class="mem-name">You?</div><div class="mem-role">All Welcome</div><button class="rank rank-mb" onclick="openModal()" style="cursor:pointer;">JOIN NOW</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== SKYWATCH PAGE =================== -->
+<div class="page" id="skywatch" style="padding-top:62px;">
+  <div class="sec">
+    <div class="sec-tag">05 // OBSERVATORY</div>
+    <h2 class="sec-title">Tonight's <span class="a">Skywatch</span></h2>
+    <p style="color:rgba(255,255,255,.28);margin-top:8px;font-size:.88rem;font-weight:300;">Live sky chart for Kampala, Uganda — 0.3136°N 32.5811°E // Tonight at 21:00 EAT</p>
+    <div class="sky-grid">
+      <div class="sky-map-wrap"><canvas id="sky-canvas"></canvas><div class="sky-hud"><div class="sky-label">▸ KAMPALA SKY MAP // 21:00 EAT</div><div class="sky-coord">0.3136°N // 32.5811°E</div></div></div>
+      <div class="obj-list">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.18);letter-spacing:.3em;margin-bottom:14px;">VISIBLE TONIGHT</div>
+        <div class="obj-item"><div class="obj-name">JUPITER</div><div class="obj-type">GAS GIANT // 584M KM</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:92%"></div></div><div class="vis-pct">92%</div></div></div>
+        <div class="obj-item"><div class="obj-name">SATURN</div><div class="obj-type">RINGED GIANT // 1.2B KM</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:78%"></div></div><div class="vis-pct">78%</div></div></div>
+        <div class="obj-item"><div class="obj-name">MARS</div><div class="obj-type">RED PLANET // 78M KM</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:65%"></div></div><div class="vis-pct">65%</div></div></div>
+        <div class="obj-item"><div class="obj-name">ORION NEBULA</div><div class="obj-type">EMISSION NEBULA // M42</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:55%"></div></div><div class="vis-pct">55%</div></div></div>
+        <div class="obj-item"><div class="obj-name">ISS PASS</div><div class="obj-type">22:14 EAT // 408KM UP</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:100%;animation:iss 6s linear infinite"></div></div><div class="vis-pct" style="color:var(--acid-green);">LIVE</div></div></div>
+        <div class="obj-item"><div class="obj-name">ANDROMEDA</div><div class="obj-type">GALAXY // M31 // 2.5M LY</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:44%"></div></div><div class="vis-pct">44%</div></div></div>
+        <div class="obj-item"><div class="obj-name">SOUTHERN CROSS</div><div class="obj-type">CRUX // UGANDA VISIBLE</div><div class="vis-row"><div class="vis-bar"><div class="vis-fill" style="width:88%"></div></div><div class="vis-pct">88%</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== FOOTER =================== -->
+<footer>
+  <div class="footer-grid">
+    <div class="f-brand"><div class="f-logo">SPACE JUNKIES UGANDA</div><p>East Africa's premier space enthusiast community. Founded January 2025 by Ronnie Atuhaire. 135 members. Open to everyone. Broadcasting from the equator.</p></div>
+    <div class="f-col"><h4>Explore</h4><ul><li><a onclick="showPage('home')">Home</a></li><li><a onclick="showPage('gallery')">Gallery</a></li><li><a onclick="showPage('game')">Arcade</a></li><li><a onclick="showPage('movies')">Movies</a></li><li><a onclick="showPage('facts')">UG Facts</a></li></ul></div>
+    <div class="f-col"><h4>Community</h4><ul><li><a onclick="showPage('events')">Events</a></li><li><a onclick="showPage('members')">Crew</a></li><li><a onclick="showPage('skywatch')">Skywatch</a></li><li><a onclick="openModal()">Join Free</a></li></ul></div>
+    <div class="f-col"><h4>Connect</h4><ul><li><a href="#">WhatsApp</a></li><li><a href="#">Instagram</a></li><li><a href="#">YouTube</a></li><li><a href="#">Twitter/X</a></li><li><a href="/cdn-cgi/l/email-protection#563e333a3a391625263735333c23383d3f332523313738323778392431">Email</a></li></ul></div>
+  </div>
+  <div class="f-bottom"><div class="f-copy">© 2025-2026 SPACE JUNKIES UGANDA // FOUNDED BY RONNIE ATUHAIRE // 0.3136°N 32.5811°E // KAMPALA, UGANDA</div><div class="sig-bars"><span style="height:4px"></span><span style="height:7px"></span><span style="height:10px"></span><span style="height:14px;opacity:.3"></span></div></div>
+</footer>
+
+<!-- JOIN MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="modal-title">JOIN THE CREW</div>
+    <div class="modal-sub">SPACE JUNKIES UGANDA // OPEN TO ALL</div>
+    <input type="text" class="m-input" placeholder="YOUR NAME" id="mi-name">
+    <input type="email" class="m-input" placeholder="EMAIL ADDRESS" id="mi-email">
+    <input type="text" class="m-input" placeholder="LOCATION (CITY/DISTRICT IN UGANDA)" id="mi-loc">
+    <input type="text" class="m-input" placeholder="YOUR SPACE INTEREST (e.g. stargazing, sci-fi...)" id="mi-int">
+    <button class="m-btn" onclick="submitJoin()" id="m-submit">INITIATE MEMBERSHIP</button>
+    <div class="m-note">We'll add you to our WhatsApp & notify you of events.<br>No spam. No barriers. Just space. Free forever.</div>
+  </div>
+</div>
+
+<!-- CHATBOT BUBBLE -->
+<div id="chat-bubble">
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+      <div class="chat-av">🛸</div>
+      <div class="chat-head-info">
+        <div class="chat-head-name">COSMOS AI <span id="ai-mode-badge" style="font-size:.45rem;background:rgba(57,255,20,.15);color:#39FF14;border:1px solid rgba(57,255,20,.3);padding:2px 6px;letter-spacing:.1em;margin-left:6px;vertical-align:middle;">LOCAL</span></div>
+        <div class="chat-head-sub">SJU SPACE ASSISTANT // GEMINI POWERED</div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <!-- API key handled server-side via .env -->
+    <div class="chat-messages" id="chat-msgs">
+      <div class="msg msg-bot">🚀 Greetings from the cosmos! I'm Cosmos, Space Junkies Uganda's AI guide — powered by Gemini AI. Ask me anything about space, astronomy, Uganda's night sky, or our community!<div class="msg-time">Just now</div></div>
+    </div>
+    <div class="chat-suggestions" id="chat-sugs">
+      <button class="sug-btn" onclick="sendSug('How do I join SJU?')">JOIN SJU?</button>
+      <button class="sug-btn" onclick="sendSug('What can I see in Kampala tonight?')">TONIGHT'S SKY</button>
+      <button class="sug-btn" onclick="sendSug('Tell me a cool Uganda space fact')">UG SPACE FACT</button>
+      <button class="sug-btn" onclick="sendSug('What is the ISS?')">WHAT IS ISS?</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="chat-in" placeholder="ASK ABOUT SPACE..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="chat-send" onclick="sendChat()">SEND</button>
+    </div>
+  </div>
+  <button class="chat-trigger" onclick="toggleChat()">🛸<div class="chat-unread" id="chat-badge">1</div></button>
+</div>
+
+<style>
+@keyframes iss{0%{width:0%;}50%{width:100%;}100%{width:0%;}}
+</style>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// =================== CURSOR ===================
+const cur=document.getElementById('cur'),cur2=document.getElementById('cur2');
+let mx=0,my=0,cx=0,cy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur2.style.left=mx+'px';cur2.style.top=my+'px';});
+(function anim(){cx+=(mx-cx)*.15;cy+=(my-cy)*.15;cur.style.left=cx+'px';cur.style.top=cy+'px';requestAnimationFrame(anim);})();
+document.querySelectorAll('a,button,.f-card,.mem-card,.ev-item,.obj-item,.movie-card,.fact-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='40px';cur.style.height='40px';cur.style.borderColor='var(--neon-orange)';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='22px';cur.style.height='22px';cur.style.borderColor='var(--neon-cyan)';});
+});
+
+// =================== SOUND ===================
+let soundOn=true,audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playSpaceAmbient(){
+  if(!soundOn)return;
+  const ctx=getAudio();
+  // Deep drone
+  const osc=ctx.createOscillator(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+  osc.type='sine';osc.frequency.setValueAtTime(55,ctx.currentTime);osc.frequency.linearRampToValueAtTime(60,ctx.currentTime+4);
+  filter.type='lowpass';filter.frequency.value=200;
+  gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(.06,ctx.currentTime+2);gain.gain.linearRampToValueAtTime(0,ctx.currentTime+8);
+  osc.connect(filter);filter.connect(gain);gain.connect(ctx.destination);
+  osc.start();osc.stop(ctx.currentTime+8);
+  // Shimmer
+  setTimeout(()=>{if(!soundOn)return;const o2=ctx.createOscillator(),g2=ctx.createGain();o2.type='triangle';o2.frequency.value=440+Math.random()*200;g2.gain.setValueAtTime(0,ctx.currentTime);g2.gain.linearRampToValueAtTime(.015,ctx.currentTime+.5);g2.gain.linearRampToValueAtTime(0,ctx.currentTime+2);o2.connect(g2);g2.connect(ctx.destination);o2.start();o2.stop(ctx.currentTime+2);},Math.random()*3000+1000);
+}
+function playShot(){if(!soundOn)return;const ctx=getAudio();const o=ctx.createOscillator(),g=ctx.createGain();o.type='square';o.frequency.setValueAtTime(800,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(100,ctx.currentTime+.15);g.gain.setValueAtTime(.2,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.15);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.15);}
+function playExplode(){if(!soundOn)return;const ctx=getAudio();const buf=ctx.createBuffer(1,ctx.sampleRate*.3,ctx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=ctx.createBufferSource(),g=ctx.createGain(),f=ctx.createBiquadFilter();s.buffer=buf;f.type='lowpass';f.frequency.value=600;g.gain.setValueAtTime(.4,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.3);s.connect(f);f.connect(g);g.connect(ctx.destination);s.start();}
+function playLaserHit(){if(!soundOn)return;const ctx=getAudio();const o=ctx.createOscillator(),g=ctx.createGain();o.type='sawtooth';o.frequency.setValueAtTime(300,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(50,ctx.currentTime+.1);g.gain.setValueAtTime(.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.1);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.1);}
+function playUIClick(){if(!soundOn)return;const ctx=getAudio();const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.08,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.08);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.08);}
+function toggleSound(){
+  soundOn=!soundOn;
+  const label=soundOn?'🔊 SOUND ON':'🔇 SOUND OFF';
+  const sb=document.getElementById('sound-btn');if(sb)sb.textContent=label;
+  const sbm=document.getElementById('sound-btn-mobile');if(sbm)sbm.textContent=label;
+  if(soundOn)playSpaceAmbient();
+}
+setTimeout(()=>playSpaceAmbient(),1000);setInterval(()=>{if(soundOn)playSpaceAmbient();},9000);
+document.querySelectorAll('button,a').forEach(b=>b.addEventListener('click',playUIClick));
+
+// =================== STARFIELD BG ===================
+const bgCanvas=document.getElementById('bg-canvas');
+const bgCtx=bgCanvas.getContext('2d');
+let bW,bH,bStars=[];
+function resizeBg(){bW=bgCanvas.width=window.innerWidth;bH=bgCanvas.height=window.innerHeight;}
+resizeBg();window.addEventListener('resize',resizeBg);
+for(let i=0;i<350;i++)bStars.push({x:Math.random()*9999,y:Math.random()*9999,r:Math.random()*1.6+.2,a:Math.random()*.85+.1,t:Math.random()*Math.PI*2,speed:Math.random()*.0003+.0001});
+let shooters=[];
+function spawnShooter(){if(Math.random()<.004)shooters.push({x:Math.random()*bW,y:Math.random()*bH*.4,vx:Math.random()*6+2,vy:Math.random()*3+1,life:1});}
+let bT=0;
+function drawBg(){
+  bT+=.008;bgCtx.clearRect(0,0,bW,bH);
+  const grd=bgCtx.createRadialGradient(bW/2,bH/2,0,bW/2,bH/2,Math.max(bW,bH)*.7);
+  grd.addColorStop(0,'rgba(8,0,30,.5)');grd.addColorStop(1,'rgba(0,0,5,0)');
+  bgCtx.fillStyle=grd;bgCtx.fillRect(0,0,bW,bH);
+  // nebula
+  bgCtx.globalAlpha=.035;
+  const n1=bgCtx.createRadialGradient(bW*.25,bH*.35,0,bW*.25,bH*.35,bW*.28);n1.addColorStop(0,'#FF4500');n1.addColorStop(1,'transparent');bgCtx.fillStyle=n1;bgCtx.fillRect(0,0,bW,bH);
+  const n2=bgCtx.createRadialGradient(bW*.8,bH*.6,0,bW*.8,bH*.6,bW*.2);n2.addColorStop(0,'#00FFD1');n2.addColorStop(1,'transparent');bgCtx.fillStyle=n2;bgCtx.fillRect(0,0,bW,bH);
+  const n3=bgCtx.createRadialGradient(bW*.5,bH*.15,0,bW*.5,bH*.15,bW*.15);n3.addColorStop(0,'#B44FFF');n3.addColorStop(1,'transparent');bgCtx.fillStyle=n3;bgCtx.fillRect(0,0,bW,bH);
+  bgCtx.globalAlpha=1;
+  bStars.forEach(s=>{s.t+=s.speed*80;const a=s.a*(.55+.45*Math.sin(s.t));bgCtx.beginPath();bgCtx.arc((s.x*.1)%bW,(s.y*.1)%bH,s.r,0,Math.PI*2);bgCtx.fillStyle=`rgba(255,255,255,${a})`;bgCtx.fill();});
+  spawnShooter();
+  shooters=shooters.filter(s=>s.life>0);
+  shooters.forEach(s=>{bgCtx.beginPath();bgCtx.moveTo(s.x,s.y);bgCtx.lineTo(s.x-s.vx*(s.life*8),s.y-s.vy*(s.life*8));const sg=bgCtx.createLinearGradient(s.x,s.y,s.x-s.vx*8,s.y-s.vy*8);sg.addColorStop(0,`rgba(255,255,255,${s.life})`);sg.addColorStop(1,'transparent');bgCtx.strokeStyle=sg;bgCtx.lineWidth=1.5;bgCtx.stroke();s.x+=s.vx;s.y+=s.vy;s.life-=.015;});
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// =================== ROUTING ===================
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>{a.classList.remove('active-link');});
+  const nl=document.getElementById('nl-'+name);if(nl)nl.classList.add('active-link');
+  window.scrollTo(0,0);
+  if(name==='skywatch')setTimeout(startSkyMap,200);
+  if(name==='game')initGame();
+  playUIClick();
+}
+function showPageWithSection(pageName){showPage(pageName);}
+
+// =================== CALENDAR ===================
+(function buildCal(){
+  const g=document.getElementById('cal-g');if(!g)return;
+  const events=[8,14,22,29];
+  for(let i=0;i<0;i++){const e=document.createElement('div');e.style.aspectRatio='1';g.appendChild(e);}
+  for(let d=1;d<=31;d++){const e=document.createElement('div');e.className='cal-d';if(d===1)e.classList.add('today');if(events.includes(d))e.classList.add('has-ev');e.textContent=d;g.appendChild(e);}
+})();
+
+// =================== COUNTER ANIM ===================
+function countUp(id,target,dur=2000){const el=document.getElementById(id);if(!el)return;const st=performance.now();(function u(now){const p=Math.min((now-st)/dur,1),e=1-Math.pow(1-p,3);el.textContent=Math.floor(e*target).toLocaleString();if(p<1)requestAnimationFrame(u);})(st);}
+const cObs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){countUp('c-mem',135);countUp('c-ev',24);countUp('c-obs',892);countUp('c-nights',47);cObs.disconnect();}});},{threshold:.3});
+const mEl=document.getElementById('c-mem');if(mEl)cObs.observe(mEl.closest('.stats-2x2'));
+
+// =================== LIKE ===================
+function likeIt(btn){const s=btn.querySelector('span');s.textContent=parseInt(s.textContent)+1;btn.style.color='var(--neon-orange)';playUIClick();}
+
+// =================== MODAL ===================
+function openModal(){document.getElementById('modal').classList.add('on');}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+function submitJoin(){const n=document.getElementById('mi-name').value.trim();if(!n){document.getElementById('mi-name').style.borderColor='var(--neon-orange)';return;}const b=document.getElementById('m-submit');b.textContent='✓ TRANSMISSION RECEIVED — WELCOME ABOARD!';b.style.background='var(--acid-green)';setTimeout(closeModal,2200);}
+
+// =================== GALLERY UPLOAD ===================
+function handleUpload(e){
+  const files=Array.from(e.target.files);
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const grid=document.getElementById('gallery-grid');
+      const item=document.createElement('div');item.className='gal-item';
+      const img=document.createElement('img');img.src=ev.target.result;img.style.cssText='width:100%;height:100%;object-fit:cover;transition:transform .5s;filter:grayscale(30%) contrast(1.1);';
+      const overlay=document.createElement('div');overlay.className='gal-overlay';overlay.innerHTML=`<div class="gal-label">${file.name.replace(/\.[^.]+$/,'').toUpperCase()}</div>`;
+      item.appendChild(img);item.appendChild(overlay);
+      const empties=grid.querySelectorAll('.gal-item');
+      if(empties.length>0)grid.replaceChild(item,empties[0]);else grid.insertBefore(item,grid.firstChild);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// =================== MOVIES DATA ===================
+const MOVIES=[
+  {title:'Interstellar',year:2014,rating:'★★★★★',genres:['sci-fi','survival'],emoji:'🌌',desc:'A crew travels through a wormhole near Saturn in search of a new home for humanity. Mind-bending physics. Deeply emotional.',sju:'Required viewing for every SJU member. The docking scene alone.'},
+  {title:'2001: A Space Odyssey',year:1968,rating:'★★★★★',genres:['sci-fi'],emoji:'🔲',desc:"Kubrick's masterpiece. HAL 9000. The monolith. The Dawn of Man. Still the greatest space film ever made.",sju:'The film that started it all for many of us. Watch it twice.'},
+  {title:'The Martian',year:2015,rating:'★★★★★',genres:['sci-fi','survival'],emoji:'🔴',desc:'Astronaut stranded on Mars. Grows food. Uses science to survive. Brilliant, funny, inspiring.',sju:'This film makes you believe engineers are superheroes. Because they are.'},
+  {title:'Apollo 13',year:1995,rating:'★★★★★',genres:['exploration'],emoji:'🌙',desc:'The true story of the 1970 Apollo 13 mission that nearly ended in disaster. Problem-solving under pressure.',sju:'Houston, we have a problem. But we also have a solution.'},
+  {title:'Gravity',year:2013,rating:'★★★★☆',genres:['sci-fi','survival'],emoji:'🛸',desc:'Two astronauts struggle to survive after debris destroys their shuttle. Visually breathtaking. Technically impressive.',sju:'Filmed to make you feel like you are in space. It works.'},
+  {title:'Contact',year:1997,rating:'★★★★★',genres:['sci-fi','alien'],emoji:'📡',desc:'SETI scientist receives a signal from Vega. Based on Carl Sagan\'s novel. Deep, philosophical, beautiful.',sju:"This is why we look up and listen. Africa's radio telescopes matter."},
+  {title:'Arrival',year:2016,rating:'★★★★★',genres:['sci-fi','alien'],emoji:'🛸',desc:'Linguist must communicate with alien visitors. Time, language, consciousness. One of the best sci-fi films ever.',sju:'This film changed how we think about communication across cultures.'},
+  {title:'Cosmos: A Spacetime Odyssey',year:2014,rating:'★★★★★',genres:['documentary'],emoji:'🌟',desc:"Neil deGrasse Tyson's documentary series. 13 episodes. The scale of the universe made tangible.",sju:'Carl Sagan would be proud. We play this at our meetups.'},
+  {title:'For All Mankind',year:1989,rating:'★★★★★',genres:['documentary','exploration'],emoji:'🌍',desc:'NASA archive footage of the Apollo missions. Real astronauts speaking. Overwhelming beauty.',sju:'Watch this on the biggest screen you can find. Bring tissue.'},
+  {title:'The Right Stuff',year:1983,rating:'★★★★☆',genres:['exploration'],emoji:'🚀',desc:"The story of America's first astronauts. The original Mercury Seven. What it means to have the right stuff.",sju:'Ronnie recommends this for anyone thinking about what it takes.'},
+  {title:'Alien',year:1979,rating:'★★★★★',genres:['sci-fi','alien','survival'],emoji:'👽',desc:'In space no one can hear you scream. A crew encounters a terrifying lifeform. Ridley Scott at his peak.',sju:'The ultimate question: are we alone? This film answers it terrifyingly.'},
+  {title:'Hidden Figures',year:2016,rating:'★★★★★',genres:['exploration'],emoji:'🧮',desc:"The true story of Black women mathematicians at NASA who calculated trajectories for the space race.",sju:"This film is personal. Proof that Africa and its diaspora always belonged in space."},
+];
+
+function filterMovies(tag,btn){
+  document.querySelectorAll('.movie-tag').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const grid=document.getElementById('movies-grid');
+  grid.innerHTML='';
+  MOVIES.filter(m=>tag==='all'||m.genres.includes(tag)).forEach(m=>grid.appendChild(makeMovieCard(m)));
+}
+function makeMovieCard(m){
+  const d=document.createElement('div');d.className='movie-card';
+  d.innerHTML=`<div class="movie-poster"><div class="movie-poster-inner"><div class="movie-emoji">${m.emoji}</div><div class="movie-title-poster">${m.title.toUpperCase()}</div></div><div class="movie-year-badge">${m.year}</div><div class="movie-rating">${m.rating}</div><div class="movie-hover-overlay"><div class="mh-desc">${m.desc}</div><div style="font-family:'Share Tech Mono',monospace;font-size:.55rem;color:rgba(0,255,209,.6);margin-bottom:12px;letter-spacing:.1em;">SJU: "${m.sju}"</div><div class="mh-watch">▸ ADD TO WATCHLIST</div></div></div><div class="movie-meta"><div class="movie-name">${m.title}</div><div class="movie-info">${m.year}</div><div class="movie-genres">${m.genres.map(g=>`<span class="mg">${g.toUpperCase()}</span>`).join('')}</div></div>`;
+  return d;
+}
+filterMovies('all',document.querySelector('.movie-tag.active'));
+
+// =================== FACTS DATA ===================
+const FACTS=[
+  {icon:'🌍',title:'Uganda Sits on the Equator',body:'Uganda straddles the equator at nearly 0° latitude. This means <strong>objects in geostationary orbit appear almost directly overhead</strong>. Uganda is one of the best-positioned countries on Earth to launch satellites — minimal fuel needed to reach geostationary transfer orbit.',source:'ORBITAL MECHANICS // EQUATORIAL ADVANTAGE',num:'01'},
+  {icon:'🔭',title:'Uganda Space Week Started Here',body:'In 2025, <strong>Space Junkies Uganda organised the first Uganda Space Week</strong> — a landmark public event bringing astronomy, science education and space enthusiasm to hundreds of Ugandans. Founded by Ronnie Atuhaire, it was a historic first for the country.',source:'SPACE JUNKIES UGANDA // 2025',num:'02'},
+  {icon:'⭐',title:'The Southern Cross is Visible',body:'Uganda\u2019s equatorial position means <strong>the Southern Cross (Crux) is visible</strong> from Ugandan skies \u2014 a constellation invisible from Europe and most of North America. Stars like Alpha Centauri (our nearest star neighbour) can also be observed from Uganda.',source:'ASTRONOMY // CRUX CONSTELLATION',num:'03'},
+  {icon:'🌌',title:'Lake Victoria Reflects the Milky Way',body:'The Milky Way Galaxy passes almost directly overhead over Uganda during certain seasons. <strong>Lake Victoria \u2014 the world\u0027s largest tropical lake</strong> \u2014 creates spectacular reflection views of the Milky Way that few places on Earth can match.',source:'ASTROPHOTOGRAPHY // LAKE VICTORIA',num:'04'},
+  {icon:'🛸',title:'Uganda Has Dark Sky Potential',body:'Significant areas of Uganda — especially national parks like <strong>Bwindi, Kidepo, and Lake Mburo</strong> — have extremely low light pollution. Bortle scale ratings of 2-3 are achievable, making Uganda a globally competitive dark sky destination.',source:'LIGHT POLLUTION ATLAS // EAST AFRICA',num:'05'},
+  {icon:'🚀',title:'Africa Is Entering the Space Age',body:'Africa\'s space sector is growing rapidly. <strong>Rwanda, Kenya, Ethiopia and Egypt</strong> all have operational satellites. The African Union has a Space Policy. Uganda has the talent, the position, and the passion to be part of this revolution.',source:'AFRICAN UNION SPACE POLICY // 2023',num:'06'},
+  {icon:'📡',title:'The ISS Passes Over Uganda Regularly',body:'The International Space Station orbits at ~408km altitude and <strong>passes over Uganda multiple times per day</strong>. Its equatorial-crossing orbit makes it a frequent and bright visitor to Ugandan skies — visible to the naked eye as a fast-moving bright star.',source:'NASA // ISS ORBIT TRACKER',num:'07'},
+  {icon:'🌙',title:'Uganda Has the Clearest Monsoon-Free Windows',body:'Unlike coastal East African regions, <strong>Ugandan highland areas experience prolonged dry seasons</strong> with exceptional atmospheric clarity. The March-May and October-December dry periods offer months of world-class astronomical observing conditions.',source:'UGANDA METEOROLOGICAL AUTHORITY',num:'08'},
+  {icon:'💫',title:'Ancient Ugandan Cosmology',body:'Traditional Ugandan cultures had <strong>rich astronomical knowledge systems</strong>. The Baganda used celestial navigation and star positions for agricultural calendaring. The Acholi, Ankole and other groups had named star clusters and cosmological origin stories tied to celestial objects.',source:'ETHNOBOTANY // ORAL HISTORY ARCHIVES',num:'09'},
+  {icon:'🔬',title:'Makerere University Has Astrophysics',body:'<strong>Makerere University</strong> in Kampala — one of Africa\'s oldest and most respected universities — has physics and astrophysics coursework. Several Ugandan academics have conducted space-related research in collaboration with international institutions.',source:'MAKERERE UNIVERSITY // PHYSICS DEPT',num:'10'},
+  {icon:'☄️',title:'Uganda Meteorite History',body:'Several <strong>meteorite fall events have been recorded in Uganda\'s history</strong>. In 2018, fragments of an iron-rich meteorite were recovered in western Uganda, drawing international scientific attention. Uganda\'s geological record preserves evidence of ancient cosmic impacts.',source:'GEOLOGICAL SURVEY OF UGANDA',num:'11'},
+  {icon:'🌠',title:'Annual Meteor Showers Hit Differently Here',body:'The Perseids, Leonids, and Geminids are all <strong>visible from Uganda</strong> — and the equatorial viewing angle means longer visible streaks across the sky. The Eta Aquariids (debris from Halley\'s Comet) are particularly spectacular from equatorial latitudes.',source:'METEOR SHOWER CALENDAR // EQUATORIAL VIEW',num:'12'},
+];
+const fg=document.getElementById('facts-grid');
+FACTS.forEach(f=>{const d=document.createElement('div');d.className='fact-card';d.innerHTML=`<div class="fact-num">${f.num}</div><div class="ug-flag-bar"><span class="ug-f1"></span><span class="ug-f2"></span><span class="ug-f3"></span><span class="ug-f4"></span><span class="ug-f5"></span><span class="ug-f6"></span></div><div class="fact-icon">${f.icon}</div><div class="fact-title">${f.title}</div><div class="fact-body">${f.body}</div><div class="fact-source">SOURCE: ${f.source}</div>`;fg.appendChild(d);});
+
+// =================== SKYWATCH MAP ===================
+let skyAnimRunning=false;
+function startSkyMap(){
+  const skyCanvas=document.getElementById('sky-canvas');if(!skyCanvas||skyAnimRunning)return;skyAnimRunning=true;
+  const sc=skyCanvas.getContext('2d');
+  function resizeSky(){const c=skyCanvas.parentElement;skyCanvas.width=c.offsetWidth;skyCanvas.height=400;}
+  resizeSky();window.addEventListener('resize',resizeSky);
+  const skyObjs=[{name:'JUP',x:.28,y:.35,r:5,color:'#FFD700'},{name:'SAT',x:.58,y:.22,r:4,color:'#FFA500'},{name:'MARS',x:.72,y:.62,r:3.5,color:'#FF4500'},{name:'M42',x:.2,y:.72,r:8,color:'#00FFD1',nebula:true},{name:'M31',x:.85,y:.38,r:6,color:'#9370DB',nebula:true},{name:'CRUX',x:.45,y:.8,r:3,color:'#fff'},{name:'SIRIUS',x:.15,y:.45,r:4,color:'#adf'},{name:'ISS',x:.0,y:.5,r:3,color:'#39FF14',iss:true}];
+  let sT=0,issX=0;
+  function drawSky(){
+    sT+=.004;const sw=skyCanvas.width,sh=skyCanvas.height;sc.clearRect(0,0,sw,sh);
+    sc.fillStyle='#000008';sc.fillRect(0,0,sw,sh);
+    sc.strokeStyle='rgba(0,255,209,.05)';sc.lineWidth=1;
+    for(let i=1;i<=5;i++){sc.beginPath();sc.arc(sw/2,sh/2,(Math.min(sw,sh)/2)*i/5,0,Math.PI*2);sc.stroke();}
+    sc.beginPath();sc.moveTo(sw/2,0);sc.lineTo(sw/2,sh);sc.moveTo(0,sh/2);sc.lineTo(sw,sh/2);sc.strokeStyle='rgba(0,255,209,.03)';sc.stroke();
+    for(let i=0;i<90;i++){const bx=((i*137.508+sT*10)%sw),by=((i*97.3+40)%sh),ba=.15+.2*Math.sin(i+sT*2);sc.beginPath();sc.arc(bx,by,i%5===0?1.2:.5,0,Math.PI*2);sc.fillStyle=`rgba(255,255,255,${ba})`;sc.fill();}
+    const mw=sc.createLinearGradient(0,sh*.15,sw,sh*.85);mw.addColorStop(0,'transparent');mw.addColorStop(.4,'rgba(200,180,255,.025)');mw.addColorStop(.6,'rgba(220,200,255,.04)');mw.addColorStop(1,'transparent');sc.fillStyle=mw;sc.fillRect(0,0,sw,sh);
+    skyObjs.forEach(o=>{
+      const ox=o.iss?((issX=(issX+.3)%sw)):o.x*sw+Math.sin(sT*.25+o.x)*1.5,oy=o.iss?sh/2+Math.sin(sT*2)*20:o.y*sh+Math.cos(sT*.2+o.y)*1.5;
+      if(o.nebula){const ng=sc.createRadialGradient(ox,oy,0,ox,oy,o.r*4);ng.addColorStop(0,o.color+'44');ng.addColorStop(1,'transparent');sc.fillStyle=ng;sc.beginPath();sc.arc(ox,oy,o.r*4,0,Math.PI*2);sc.fill();}
+      if(o.iss){sc.beginPath();sc.moveTo(ox-20,oy);sc.lineTo(ox+20,oy);sc.strokeStyle=`rgba(57,255,20,.6)`;sc.lineWidth=1;sc.stroke();}
+      sc.beginPath();sc.arc(ox,oy,o.r,0,Math.PI*2);sc.fillStyle=o.color;sc.shadowColor=o.color;sc.shadowBlur=15;sc.fill();sc.shadowBlur=0;
+      sc.fillStyle='rgba(255,255,255,.4)';sc.font='9px "Share Tech Mono"';sc.fillText(o.name,ox+o.r+3,oy+3);
+    });
+    sc.fillStyle='rgba(0,255,209,.25)';sc.font='10px "Share Tech Mono"';sc.fillText('N',sw/2-4,14);sc.fillText('S',sw/2-4,sh-5);sc.fillText('E',5,sh/2+3);sc.fillText('W',sw-12,sh/2+3);
+    requestAnimationFrame(drawSky);
+  }drawSky();
+}
+
+// =================== ASTEROID GAME ===================
+let gameState='idle',gScore=0,gLevel=1,gLives=3,bullets=[],asteroids=[],particles=[],player={x:450,y:460,w:32,h:32,vx:0,speed:5,shooting:false},keys={},gameAnimId,hiScore=localStorage.getItem('sju-hi')||0;
+document.getElementById('g-hiscore').textContent=hiScore;
+function initGame(){const ov=document.getElementById('game-overlay');if(ov){ov.style.display='flex';document.getElementById('go-title').textContent='ASTEROID HUNTER';document.getElementById('go-sub').innerHTML='DEFEND KAMPALA FROM THE COSMOS<br>← → MOVE &nbsp;&nbsp; SPACE FIRE';document.getElementById('g-hiscore').textContent=localStorage.getItem('sju-hi')||0;}}
+function startGame(){
+  document.getElementById('game-overlay').style.display='none';
+  gameState='playing';gScore=0;gLevel=1;gLives=3;bullets=[];asteroids=[];particles=[];player.x=450;player.vx=0;
+  updateGameUI();spawnAsteroidWave(1);
+  if(gameAnimId)cancelAnimationFrame(gameAnimId);gameLoop();
+}
+function spawnAsteroidWave(lvl){
+  for(let i=0;i<3+lvl*2;i++){asteroids.push({x:Math.random()*860+20,y:-40-Math.random()*200,r:18+Math.random()*20,vx:(Math.random()-.5)*(1+lvl*.3),vy:.8+Math.random()*(1+lvl*.2),hp:1});}
+}
+const GC=document.getElementById('game-canvas'),GX=GC.getContext('2d');
+document.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key===' '){e.preventDefault();if(gameState==='playing')fireBullet();}});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+GC.addEventListener('click',e=>{if(gameState!=='playing')return;const r=GC.getBoundingClientRect(),x=(e.clientX-r.left)*(GC.width/r.width);if(x<GC.width/3)keys['ArrowLeft']=true,setTimeout(()=>keys['ArrowLeft']=false,100);else if(x>GC.width*2/3)keys['ArrowRight']=true,setTimeout(()=>keys['ArrowRight']=false,100);else fireBullet();});
+function fireBullet(){if(gameState!=='playing')return;bullets.push({x:player.x,y:player.y-20,vy:-11});playShot();}
+let lastShot=0;
+function gameLoop(){
+  gameAnimId=requestAnimationFrame(gameLoop);
+  if(gameState!=='playing')return;
+  // movement
+  if(keys['ArrowLeft']||keys['a']){player.vx-=1.2;}
+  if(keys['ArrowRight']||keys['d']){player.vx+=1.2;}
+  player.vx*=.82;player.x+=player.vx;player.x=Math.max(20,Math.min(GC.width-20,player.x));
+  // auto-fire
+  const now=Date.now();if((keys[' ']||keys['w']||keys['ArrowUp'])&&now-lastShot>200){fireBullet();lastShot=now;}
+  // bullets
+  bullets=bullets.filter(b=>b.y>-10);bullets.forEach(b=>b.y+=b.vy);
+  // asteroids
+  let allDead=true;
+  asteroids.forEach(a=>{a.x+=a.vx;a.y+=a.vy;a.x=((a.x%GC.width)+GC.width)%GC.width;if(a.y<GC.height)allDead=false;
+    if(a.y>GC.height+a.r){loseLife();}
+  });
+  if(allDead&&asteroids.length===0){gLevel++;updateGameUI();spawnAsteroidWave(gLevel);}
+  // collisions
+  bullets.forEach((b,bi)=>{asteroids.forEach((a,ai)=>{if(Math.hypot(b.x-a.x,b.y-a.y)<a.r+4){bullets.splice(bi,1);playExplode();spawnParticles(a.x,a.y,a.r>22?8:5);gScore+=a.r>22?10:20;updateGameUI();
+    if(a.r>22){asteroids.splice(ai,1);const nr=Math.max(8,a.r*.55);asteroids.push({x:a.x-nr,y:a.y,r:nr,vx:-2,vy:a.vy*.8,hp:1},{x:a.x+nr,y:a.y,r:nr,vx:2,vy:a.vy*.8,hp:1});}else{asteroids.splice(ai,1);}
+  }});});
+  // particles
+  particles=particles.filter(p=>p.life>0);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.1;p.life-=.04;});
+  // draw
+  GX.clearRect(0,0,GC.width,GC.height);
+  GX.fillStyle='#000008';GX.fillRect(0,0,GC.width,GC.height);
+  // grid
+  GX.strokeStyle='rgba(0,255,209,.04)';GX.lineWidth=1;
+  for(let x=0;x<GC.width;x+=60){GX.beginPath();GX.moveTo(x,0);GX.lineTo(x,GC.height);GX.stroke();}
+  for(let y=0;y<GC.height;y+=60){GX.beginPath();GX.moveTo(0,y);GX.lineTo(GC.width,y);GX.stroke();}
+  // Uganda at bottom
+  GX.font='bold 11px "Share Tech Mono"';GX.fillStyle='rgba(0,255,209,.15)';GX.textAlign='center';GX.fillText('KAMPALA, UGANDA — DEFEND THE EQUATOR',GC.width/2,GC.height-10);GX.textAlign='left';
+  // bullets
+  bullets.forEach(b=>{GX.beginPath();GX.rect(b.x-2,b.y-8,4,16);GX.fillStyle='#00FFD1';GX.shadowColor='#00FFD1';GX.shadowBlur=10;GX.fill();GX.shadowBlur=0;});
+  // asteroids
+  asteroids.forEach(a=>{GX.beginPath();const pts=7;for(let i=0;i<pts;i++){const ang=((Math.PI*2/pts)*i)+Date.now()/3000,rad=a.r*(0.8+0.2*Math.sin(ang*3));const px=a.x+Math.cos(ang)*rad,py=a.y+Math.sin(ang)*rad;i===0?GX.moveTo(px,py):GX.lineTo(px,py);}GX.closePath();GX.fillStyle='rgba(180,80,20,.7)';GX.strokeStyle='#FF4500';GX.lineWidth=2;GX.fill();GX.shadowColor='#FF4500';GX.shadowBlur=8;GX.stroke();GX.shadowBlur=0;});
+  // particles
+  particles=particles.filter(p=>p.life>0);particles.forEach(p=>{const pr=Math.max(0.01,p.r*p.life);GX.beginPath();GX.arc(p.x,p.y,pr,0,Math.PI*2);GX.fillStyle=`rgba(255,${Math.floor(100+p.life*155)},0,${Math.max(0,p.life)})`;GX.fill();});
+  // player
+  const px=player.x,py=player.y;
+  GX.save();GX.translate(px,py);
+  GX.fillStyle='#00FFD1';GX.shadowColor='#00FFD1';GX.shadowBlur=20;
+  GX.beginPath();GX.moveTo(0,-18);GX.lineTo(-14,14);GX.lineTo(-6,8);GX.lineTo(0,12);GX.lineTo(6,8);GX.lineTo(14,14);GX.closePath();GX.fill();
+  GX.fillStyle='rgba(255,69,0,.8)';GX.shadowColor='var(--neon-orange)';
+  GX.beginPath();GX.moveTo(-8,14);GX.lineTo(-4,22);GX.lineTo(0,18);GX.lineTo(4,22);GX.lineTo(8,14);GX.closePath();GX.fill();
+  GX.shadowBlur=0;GX.restore();
+  // lives display
+  let livesTxt='';for(let i=0;i<gLives;i++)livesTxt+='♥ ';document.getElementById('g-lives-txt').textContent=livesTxt;
+}
+function loseLife(){gLives--;updateGameUI();playLaserHit();if(gLives<=0){gameOver();}else{player.x=450;}}
+function spawnParticles(x,y,n){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*5,vy:(Math.random()-.5)*5-2,r:Math.max(1,3+Math.random()*3),life:1});}
+function updateGameUI(){document.getElementById('g-score').textContent=gScore;document.getElementById('g-level').textContent=gLevel;if(gScore>hiScore){hiScore=gScore;localStorage.setItem('sju-hi',hiScore);document.getElementById('g-hiscore').textContent=hiScore;}}
+function gameOver(){gameState='idle';const ov=document.getElementById('game-overlay');ov.style.display='flex';document.getElementById('go-title').textContent='MISSION FAILED';document.getElementById('go-sub').innerHTML=`FINAL SCORE: <span style="color:var(--neon-yellow);font-size:2rem;">${gScore}</span><br>LEVEL REACHED: ${gLevel}`;document.getElementById('go-btn').textContent='RETRY MISSION';if(gScore>0){const hs=document.getElementById('hs-list');hs.innerHTML=`Your score: ${gScore} | Best: ${hiScore}`;}}
+
+// =================== CHATBOT ===================
+// =================== MOBILE MENU ===================
+function toggleMobileMenu(){
+  const menu=document.getElementById('mobile-menu');
+  const btn=document.getElementById('ham-btn');
+  const isOpen=menu.classList.contains('open');
+  menu.classList.toggle('open',!isOpen);
+  btn.classList.toggle('open',!isOpen);
+}
+function closeMobileMenu(){
+  document.getElementById('mobile-menu').classList.remove('open');
+  document.getElementById('ham-btn').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('mobile-menu');
+  const btn=document.getElementById('ham-btn');
+  if(menu.classList.contains('open')&&!menu.contains(e.target)&&!btn.contains(e.target))closeMobileMenu();
+});
+
+// =================== CHATBOT + GEMINI ===================
+let chatOpen=false;
+// API key lives securely in .env on the server
+let geminiKey = 'server-side';
+function saveGeminiKey(){}  // no-op
+
+async function callGemini(userMsg){
+  const res = await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:userMsg})
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error||'api_error');
+  return data.reply;
+}
+
+
+// Set badge to GEMINI AI on load
+document.addEventListener('DOMContentLoaded',function(){const b=document.getElementById('ai-mode-badge');if(b){b.textContent='GEMINI AI';b.style.background='rgba(0,255,209,.12)';b.style.color='var(--neon-cyan)';b.style.borderColor='rgba(0,255,209,.3)';}});
+
+const SPACE_QA={
+  'join|member|how do i join|sign up':()=>`🚀 Joining Space Junkies Uganda is totally FREE and open to everyone! Click the orange "JOIN THE CREW" button on the homepage. Founder Ronnie Atuhaire will add you to our WhatsApp community and keep you updated on events. No experience required — just curiosity!`,
+  'iss|international space station':()=>`🛸 The ISS orbits ~408km above Earth at 27,600 km/h, completing one orbit every 92 minutes. Tonight it passes over Kampala at 22:14 EAT — visible to the naked eye as a bright, fast-moving star!`,
+  'uganda space week':()=>`🇺🇬 Uganda Space Week 2025 was a landmark event organised by Space Junkies Uganda! Hundreds of Ugandans gathered to stargaze, learn about space science, and celebrate our cosmic connection. Founded by Ronnie Atuhaire — a historic first for the country!`,
+  'kampala|sky tonight|visible tonight|see tonight':()=>`🌌 From Kampala tonight (0.3136°N): Jupiter is brilliant in the west (92% visibility), Saturn follows, and Mars glows red in the east. The ISS passes at 22:14 EAT. Pro tip: our equatorial position means you can see stars from BOTH hemispheres — including the Southern Cross!`,
+  'fact|uganda|ugandan':()=>{const f=FACTS[Math.floor(Math.random()*FACTS.length)];return`${f.icon} **${f.title}**: ${f.body.replace(/<[^>]+>/g,'')}`;},
+  'telescope|equipment|gear':()=>`🔭 You don't need expensive equipment to start! Our member Babirye built a star tracker for under 80,000 UGX (~$21). We run regular Telescope Building Workshops too. Even binoculars reveal Jupiter's moons — start simple, dream big.`,
+  'game|play|arcade':()=>`🎮 Check out our Arcade — "Asteroid Hunter Uganda"! Defend Kampala from the asteroid belt. Use arrow keys to move, SPACE to shoot. Click ARCADE in the navigation — how high can you score?`,
+  'milky way|galaxy|star':()=>`✨ The Milky Way is our home galaxy — 100,000 light-years across with 200-400 billion stars. From Uganda's dark sky sites like Lake Mburo or Bwindi, the galactic core is visible to the naked eye. Utterly humbling.`,
+  'mars|red planet':()=>`🔴 Mars is currently 78 million km from Earth. From Kampala you can see it as a reddish bright point in the east. Mars opposition is approaching in ~78 days — the best observing window in years!`,
+  'black hole':()=>`🌀 Black holes are regions where gravity is so extreme nothing — not even light — escapes. The closest known one is Gaia BH1, ~1,560 light-years away. In 2019, the Event Horizon Telescope captured the first ever image of a black hole's shadow.`,
+  'alien|life|extraterrestrial':()=>`👽 Are we alone? We haven't confirmed it yet — but with ~300 billion stars in the Milky Way and many potentially habitable planets, the odds seem good. The Fermi Paradox asks: if life is common, why haven't we found it? What do YOU think?`,
+  'default':()=>`🚀 Great question! I'm Cosmos, your Space Junkies Uganda guide. Set a Gemini API key in the chat header for full AI responses — or ask me about: our community, Kampala's night sky, upcoming events, space facts about Uganda, and more!`
+};
+function getLocalResponse(input){const lower=input.toLowerCase();for(const[pattern,fn] of Object.entries(SPACE_QA)){if(pattern==='default')continue;const keys=pattern.split('|');if(keys.some(k=>lower.includes(k)))return fn();}return SPACE_QA.default();}
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open',chatOpen);
+  if(chatOpen){document.getElementById('chat-badge').style.display='none';document.getElementById('chat-in').focus();}
+}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-in');
+  const msg=inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  addMsg(msg,'user');
+  document.getElementById('chat-sugs').style.display='none';
+  // Show typing
+  const typing=document.createElement('div');
+  typing.className='msg msg-bot';
+  typing.id='typing-indicator';
+  typing.innerHTML='<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  const msgs=document.getElementById('chat-msgs');
+  msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
+  if(geminiKey){
+    try{
+      const reply=await callGemini(msg);
+      typing.remove();
+      addMsg(reply,'bot');
+    }catch(err){
+      typing.remove();
+      if(err.message==='invalid_key'){
+        geminiKey='';localStorage.removeItem('sju-gemini-key');
+        const badge=document.getElementById('ai-mode-badge');
+        badge.textContent='LOCAL';badge.style.color='#39FF14';badge.style.background='rgba(57,255,20,.15)';badge.style.borderColor='rgba(57,255,20,.3)';
+        document.getElementById('api-key-row').style.display='flex';
+        addMsg('⚠️ Gemini API key appears invalid. Please check and re-enter your key above. Falling back to local responses.','bot');
+      }else{
+        addMsg('⚠️ Gemini API error. Falling back to local knowledge: '+getLocalResponse(msg),'bot');
+      }
+    }
+  }else{
+    await new Promise(r=>setTimeout(r,700+Math.random()*500));
+    typing.remove();
+    addMsg(getLocalResponse(msg),'bot');
+  }
+}
+
+function sendSug(txt){document.getElementById('chat-in').value=txt;sendChat();}
+function addMsg(text,role){
+  const d=document.createElement('div');
+  d.className=`msg msg-${role}`;
+  d.innerHTML=text+'<div class="msg-time">'+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</div>';
+  const msgs=document.getElementById('chat-msgs');msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+
+// =================== FLOATING PARTICLES =================== 
+function createParticle(){
+  const p=document.createElement('div');p.className='particle';
+  const size=Math.random()*3+1;p.style.cssText=`width:${size}px;height:${size}px;background:rgba(255,${Math.random()>0.5?69:215},${Math.random()>0.5?0:255},${Math.random()*.4+.1});left:${Math.random()*100}%;top:${Math.random()*100+100}%;animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*5}s;position:fixed;z-index:1;pointer-events:none;`;
+  document.body.appendChild(p);setTimeout(()=>p.remove(),20000);
+}
+setInterval(createParticle,800);
+
+// =================== AURORA EFFECT ===================
+let auroraCanvas=document.createElement('canvas');auroraCanvas.style.cssText='position:fixed;top:0;left:0;width:100%;height:60%;z-index:1;pointer-events:none;opacity:.06;';document.body.insertBefore(auroraCanvas,document.body.firstChild);
+const aCtx=auroraCanvas.getContext('2d');
+auroraCanvas.width=window.innerWidth;auroraCanvas.height=window.innerHeight*.6;
+let aT=0;
+function drawAurora(){aT+=.005;aCtx.clearRect(0,0,auroraCanvas.width,auroraCanvas.height);
+  for(let x=0;x<auroraCanvas.width;x+=4){const y1=Math.sin(x*.005+aT)*60+100,y2=Math.sin(x*.008+aT*1.3)*40+80;const grad=aCtx.createLinearGradient(0,y1,0,y2+60);grad.addColorStop(0,'rgba(0,255,209,0)');grad.addColorStop(.5,`rgba(0,255,209,${.3+.3*Math.sin(x*.01+aT)})`);grad.addColorStop(1,'rgba(180,79,255,0)');aCtx.fillStyle=grad;aCtx.fillRect(x,y1,4,y2-y1+60);}
+  requestAnimationFrame(drawAurora);}drawAurora();
+
+// =================== SMOOTH SCROLL REVEAL ===================
+const revealObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});},{threshold:.1});
+document.querySelectorAll('.f-card,.fact-card,.movie-card,.mem-card,.ev-item,.obj-item,.stat-card').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity .5s ease,transform .5s ease';revealObs.observe(el);});
+</script>
+</body>
+</html>
