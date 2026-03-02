@@ -258,6 +258,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 30px;height:62px;
 .sw-sub{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.35);letter-spacing:.15em;line-height:1.8;}
 .sw-badge{position:absolute;top:16px;right:16px;background:var(--neon-orange);color:#000;font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:900;padding:6px 14px;letter-spacing:.15em;}
 
+/* ===== LIGHTBOX SLIDER ===== */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,5,.97);z-index:9999;display:none;align-items:center;justify-content:center;animation:fadeIn .3s ease;}
+.lightbox.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.lightbox-content{position:relative;max-width:90vw;max-height:90vh;animation:zoomIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes zoomIn{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+.lightbox-img{max-width:90vw;max-height:85vh;object-fit:contain;border:2px solid rgba(0,255,209,.3);box-shadow:0 0 60px rgba(0,255,209,.4),0 0 120px rgba(255,69,0,.2);}
+.lightbox-caption{position:absolute;bottom:-50px;left:0;right:0;text-align:center;font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--neon-cyan);letter-spacing:.15em;text-shadow:0 0 10px var(--neon-cyan);}
+.lightbox-close{position:absolute;top:-50px;right:0;background:rgba(255,69,0,.8);color:#fff;border:none;width:45px;height:45px;font-size:1.5rem;cursor:pointer;font-family:'Orbitron',sans-serif;transition:all .3s;border:1px solid var(--neon-orange);}
+.lightbox-close:hover{background:var(--neon-orange);box-shadow:0 0 30px var(--neon-orange);transform:rotate(90deg);}
+.lightbox-prev,.lightbox-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,255,209,.15);backdrop-filter:blur(10px);color:var(--neon-cyan);border:1px solid rgba(0,255,209,.3);width:60px;height:60px;font-size:1.8rem;cursor:pointer;font-family:'Orbitron',sans-serif;font-weight:900;transition:all .3s;display:flex;align-items:center;justify-content:center;}
+.lightbox-prev{left:20px;}
+.lightbox-next{right:20px;}
+.lightbox-prev:hover,.lightbox-next:hover{background:rgba(0,255,209,.3);box-shadow:0 0 30px rgba(0,255,209,.5);transform:translateY(-50%) scale(1.1);}
+.lightbox-counter{position:absolute;top:-50px;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:.9rem;color:rgba(255,255,255,.6);letter-spacing:.2em;}
+
 /* ===== GAME PAGE ===== */
 #game-canvas-wrap{position:relative;margin-top:30px;}
 #game-canvas{background:#000;border:1px solid rgba(0,255,209,.2);display:block;cursor:crosshair;image-rendering:pixelated;}
@@ -692,6 +708,18 @@ footer{border-top:1px solid rgba(255,255,255,.045);padding:60px 40px 36px;max-wi
       <div class="upload-txt">📸 DROP YOUR SPACE PHOTOS HERE<br>or click to browse</div>
       <div class="upload-sub">JPG, PNG, WEBP • Max 10MB each • Your photos will appear in the gallery above</div>
     </label>
+  </div>
+</div>
+
+<!-- Lightbox Slider -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-content">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div class="lightbox-counter" id="lightbox-counter">1 / 1</div>
+    <button class="lightbox-prev" onclick="changeLightboxImage(-1)">‹</button>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="">
+    <button class="lightbox-next" onclick="changeLightboxImage(1)">›</button>
+    <div class="lightbox-caption" id="lightbox-caption"></div>
   </div>
 </div>
 
@@ -1558,13 +1586,16 @@ const revealObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIn
 document.querySelectorAll('.f-card,.fact-card,.movie-card,.mem-card,.ev-item,.obj-item,.stat-card').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity .5s ease,transform .5s ease';revealObs.observe(el);});
 
 // =================== LOAD GALLERY IMAGES ===================
+let galleryImagesData=[];
 async function loadGalleryImages(){
   try{
     const res=await fetch('/api/gallery');
     const data=await res.json();
+    const galleryGrid=document.getElementById('gallery-grid');
+    const placeholders=galleryGrid.querySelectorAll('.gal-item');
+    
     if(data.images && data.images.length>0){
-      const galleryGrid=document.getElementById('gallery-grid');
-      const placeholders=galleryGrid.querySelectorAll('.gal-item');
+      galleryImagesData=data.images;
       
       // Replace placeholders with uploaded images one at a time
       data.images.forEach((img,index)=>{
@@ -1576,13 +1607,62 @@ async function loadGalleryImages(){
               <div class="gal-label">${img.caption||'SPACE JUNKIES UGANDA'}</div>
             </div>
           `;
+          item.onclick=()=>openLightbox(index);
+          item.style.cursor='pointer';
         }
       });
+    }
+    
+    // Make remaining placeholders non-clickable
+    for(let i=galleryImagesData.length;i<placeholders.length;i++){
+      placeholders[i].style.cursor='default';
     }
   }catch(err){
     console.error('Failed to load gallery:',err);
   }
 }
+
+// =================== LIGHTBOX SLIDER ===================
+let currentLightboxIndex=0;
+
+function openLightbox(index){
+  currentLightboxIndex=index;
+  updateLightboxImage();
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow='';
+}
+
+function changeLightboxImage(direction){
+  currentLightboxIndex+=direction;
+  if(currentLightboxIndex<0)currentLightboxIndex=galleryImagesData.length-1;
+  if(currentLightboxIndex>=galleryImagesData.length)currentLightboxIndex=0;
+  updateLightboxImage();
+}
+
+function updateLightboxImage(){
+  const img=galleryImagesData[currentLightboxIndex];
+  document.getElementById('lightbox-img').src=img.url;
+  document.getElementById('lightbox-caption').textContent=img.caption||'SPACE JUNKIES UGANDA';
+  document.getElementById('lightbox-counter').textContent=`${currentLightboxIndex+1} / ${galleryImagesData.length}`;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lightbox').classList.contains('active'))return;
+  if(e.key==='Escape')closeLightbox();
+  if(e.key==='ArrowLeft')changeLightboxImage(-1);
+  if(e.key==='ArrowRight')changeLightboxImage(1);
+});
+
+// Close on background click
+document.getElementById('lightbox').addEventListener('click',e=>{
+  if(e.target.id==='lightbox')closeLightbox();
+});
 
 // Load gallery on page load
 loadGalleryImages();

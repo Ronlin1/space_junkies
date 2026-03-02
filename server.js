@@ -126,11 +126,6 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// ── Catch-all: serve index.html for SPA routing ─
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 // ══════════════════════════════════════════════════
 // ADMIN API ENDPOINTS
 // ══════════════════════════════════════════════════
@@ -138,6 +133,15 @@ app.get('*', (req, res) => {
 // Gallery Upload
 app.post('/api/admin/gallery/upload', upload.array('images', 10), (req, res) => {
   try {
+    console.log('[Gallery Upload] Received request');
+    console.log('[Gallery Upload] Files:', req.files ? req.files.length : 0);
+    console.log('[Gallery Upload] Caption:', req.body.caption);
+    
+    if (!req.files || req.files.length === 0) {
+      console.log('[Gallery Upload] No files received');
+      return res.status(400).json({ error: 'No files uploaded' });
+    }
+    
     const caption = req.body.caption || '';
     const uploadedImages = req.files.map(file => ({
       id: Date.now() + '-' + Math.random().toString(36).substring(2, 11),
@@ -149,10 +153,14 @@ app.post('/api/admin/gallery/upload', upload.array('images', 10), (req, res) => 
     
     galleryImages.push(...uploadedImages);
     saveData(GALLERY_FILE, galleryImages);
+    
+    console.log('[Gallery Upload] Success! Uploaded:', uploadedImages.length, 'images');
+    console.log('[Gallery Upload] Total images now:', galleryImages.length);
+    
     res.json({ success: true, images: uploadedImages });
   } catch (err) {
     console.error('[Gallery Upload Error]', err);
-    res.status(500).json({ error: 'Upload failed' });
+    res.status(500).json({ error: 'Upload failed: ' + err.message });
   }
 });
 

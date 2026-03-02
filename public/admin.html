@@ -160,14 +160,21 @@ async function uploadGalleryImage(){
     showStatus('gallery-status','Please select at least one image','error');
     return;
   }
+  console.log('[Admin] Uploading',selectedFiles.length,'files');
   const caption=document.getElementById('gallery-caption').value;
   const formData=new FormData();
-  selectedFiles.forEach(file=>formData.append('images',file));
+  selectedFiles.forEach(file=>{
+    console.log('[Admin] Adding file:',file.name,file.size,'bytes');
+    formData.append('images',file);
+  });
   formData.append('caption',caption);
   
   try{
+    console.log('[Admin] Sending request to /api/admin/gallery/upload');
     const res=await fetch('/api/admin/gallery/upload',{method:'POST',body:formData});
+    console.log('[Admin] Response status:',res.status);
     const data=await res.json();
+    console.log('[Admin] Response data:',data);
     if(res.ok){
       showStatus('gallery-status','Images uploaded successfully!','success');
       loadGallery();
@@ -178,6 +185,7 @@ async function uploadGalleryImage(){
       showStatus('gallery-status',data.error||'Upload failed','error');
     }
   }catch(err){
+    console.error('[Admin] Upload error:',err);
     showStatus('gallery-status','Upload error: '+err.message,'error');
   }
 }
