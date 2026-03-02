@@ -451,7 +451,7 @@ footer{border-top:1px solid rgba(255,255,255,.045);padding:60px 40px 36px;max-wi
     <li><a onclick="showPage('game')" id="nl-game">ARCADE</a></li>
     <li><a onclick="showPage('movies')" id="nl-movies">MOVIES</a></li>
     <li><a onclick="showPage('facts')" id="nl-facts">UG FACTS</a></li>
-    <li><a onclick="showPage('events')" id="events">EVENTS</a></li>
+    <li><a onclick="showPage('events')" id="nl-events">EVENTS</a></li>
     <li><a onclick="showPage('members')" id="nl-members">CREW</a></li>
     <li><a onclick="showPage('skywatch')" id="nl-skywatch">SKYWATCH</a></li>
   </ul>
@@ -703,7 +703,7 @@ footer{border-top:1px solid rgba(255,255,255,.045);padding:60px 40px 36px;max-wi
     <p class="sec-body">Defend Kampala from the asteroid belt. Use ← → to move, SPACE to fire. Mobile: tap left/right sides of canvas to move, tap center to fire.</p>
 
     <div class="game-ui">
-      <div class="game-stat">SCORE:<div class="gal-item"><div class="gal-placeholder"><div class="gal-icon">🌌</div><div class="gal-ph-txt">UGANDA SPACE WEEK 2025 — OPENING CEREMONY</div></div><div class="gal-overlay"><div class="gal-label">UPLOAD YOUR PHOTO</div></div></div> <span id="g-score">0</span></div>
+      <div class="game-stat">SCORE:<span id="g-score">0</span></div>
       <div class="game-stat">LEVEL: <span id="g-level">1</span></div>
       <div class="game-stat">HEALTH: <span id="g-lives-txt">30</span></div>
       <div class="game-stat" style="color:var(--neon-yellow);">HI-SCORE: <span id="g-hiscore">0</span></div>
@@ -1556,6 +1556,36 @@ function drawAurora(){aT+=.005;aCtx.clearRect(0,0,auroraCanvas.width,auroraCanva
 // =================== SMOOTH SCROLL REVEAL ===================
 const revealObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});},{threshold:.1});
 document.querySelectorAll('.f-card,.fact-card,.movie-card,.mem-card,.ev-item,.obj-item,.stat-card').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity .5s ease,transform .5s ease';revealObs.observe(el);});
+
+// =================== LOAD GALLERY IMAGES ===================
+async function loadGalleryImages(){
+  try{
+    const res=await fetch('/api/gallery');
+    const data=await res.json();
+    if(data.images && data.images.length>0){
+      const galleryGrid=document.getElementById('gallery-grid');
+      const placeholders=galleryGrid.querySelectorAll('.gal-item');
+      
+      // Replace placeholders with uploaded images one at a time
+      data.images.forEach((img,index)=>{
+        if(index<placeholders.length){
+          const item=placeholders[index];
+          item.innerHTML=`
+            <img src="${img.url}" alt="${img.caption||'Gallery Image'}" style="width:100%;height:100%;object-fit:cover;">
+            <div class="gal-overlay">
+              <div class="gal-label">${img.caption||'SPACE JUNKIES UGANDA'}</div>
+            </div>
+          `;
+        }
+      });
+    }
+  }catch(err){
+    console.error('Failed to load gallery:',err);
+  }
+}
+
+// Load gallery on page load
+loadGalleryImages();
 </script>
 </body>
 </html>
