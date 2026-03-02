@@ -275,6 +275,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 30px;height:62px;
 .lightbox-prev:hover,.lightbox-next:hover{background:rgba(0,255,209,.3);box-shadow:0 0 30px rgba(0,255,209,.5);transform:translateY(-50%) scale(1.1);}
 .lightbox-counter{position:absolute;top:-50px;left:50%;transform:translateX(-50%);font-family:'Orbitron',sans-serif;font-size:.9rem;color:rgba(255,255,255,.6);letter-spacing:.2em;}
 
+/* ===== DEVELOPMENT POPUP ===== */
+.dev-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:linear-gradient(135deg,rgba(255,69,0,.95),rgba(180,79,255,.95));border:2px solid var(--neon-orange);padding:40px 50px;z-index:10000;text-align:center;border-radius:8px;box-shadow:0 0 60px rgba(255,69,0,.6),0 0 120px rgba(180,79,255,.4);opacity:0;pointer-events:none;transition:all .4s cubic-bezier(.34,1.56,.64,1);max-width:500px;}
+.dev-popup.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto;}
+.dev-popup-icon{font-size:3rem;margin-bottom:15px;animation:construction-blink 1.5s ease-in-out infinite;}
+@keyframes construction-blink{0%,100%{opacity:1;}50%{opacity:.5;}}
+.dev-popup-title{font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:900;color:#fff;margin-bottom:12px;letter-spacing:.15em;text-shadow:0 2px 10px rgba(0,0,0,.5);}
+.dev-popup-text{font-family:'Share Tech Mono',monospace;font-size:.8rem;color:rgba(255,255,255,.9);line-height:1.8;letter-spacing:.05em;}
+.dev-popup-overlay{position:fixed;inset:0;background:rgba(0,0,5,.85);z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;}
+.dev-popup-overlay.show{opacity:1;pointer-events:auto;}
+
 /* ===== GAME PAGE ===== */
 #game-canvas-wrap{position:relative;margin-top:30px;}
 #game-canvas{background:#000;border:1px solid rgba(0,255,209,.2);display:block;cursor:crosshair;image-rendering:pixelated;}
@@ -756,6 +766,14 @@ footer{border-top:1px solid rgba(255,255,255,.045);padding:60px 40px 36px;max-wi
     <button class="lightbox-next" onclick="changeLightboxImage(1)">›</button>
     <div class="lightbox-caption" id="lightbox-caption"></div>
   </div>
+</div>
+
+<!-- Development Popup -->
+<div class="dev-popup-overlay" id="dev-popup-overlay"></div>
+<div class="dev-popup" id="dev-popup">
+  <div class="dev-popup-icon">🚧</div>
+  <div class="dev-popup-title">UNDER DEVELOPMENT</div>
+  <div class="dev-popup-text">This feature is currently under active development.<br>Check back soon for updates!</div>
 </div>
 
 <!-- =================== GAME PAGE =================== -->
@@ -1766,6 +1784,38 @@ function changeMonth(direction){
 
 // Generate calendar on page load
 generateEventCalendar();
+
+// =================== DEVELOPMENT POPUP ===================
+function showDevPopup(){
+  const popup=document.getElementById('dev-popup');
+  const overlay=document.getElementById('dev-popup-overlay');
+  popup.classList.add('show');
+  overlay.classList.add('show');
+  
+  // Auto-hide after 5 seconds
+  setTimeout(()=>{
+    popup.classList.remove('show');
+    overlay.classList.remove('show');
+  },5000);
+}
+
+// Close popup when clicking overlay
+document.getElementById('dev-popup-overlay').addEventListener('click',()=>{
+  document.getElementById('dev-popup').classList.remove('show');
+  document.getElementById('dev-popup-overlay').classList.remove('show');
+});
+
+// Make all feed cards clickable
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.f-card').forEach(card=>{
+    card.style.cursor='pointer';
+    card.addEventListener('click',e=>{
+      // Don't trigger if clicking on buttons
+      if(e.target.closest('.f-act') || e.target.closest('button'))return;
+      showDevPopup();
+    });
+  });
+});
 
 // Load gallery on page load
 loadGalleryImages();
