@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SJU Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--void:#000005;--neon-orange:#FF4500;--neon-cyan:#00FFD1;--neon-yellow:#FFD700;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);color:#ddd;font-family:'Share Tech Mono',monospace;padding:20px;}
+.admin-container{max-width:1200px;margin:0 auto;}
+.admin-header{text-align:center;padding:40px 0;border-bottom:2px solid var(--neon-orange);}
+.admin-title{font-family:'Orbitron',sans-serif;font-size:2.5rem;color:var(--neon-orange);text-shadow:0 0 20px var(--neon-orange);}
+.admin-subtitle{font-size:.8rem;color:rgba(255,255,255,.4);margin-top:10px;letter-spacing:.3em;}
+.admin-tabs{display:flex;gap:10px;margin:30px 0;justify-content:center;flex-wrap:wrap;}
+.tab-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:12px 24px;cursor:pointer;font-family:'Orbitron',sans-serif;font-size:.7rem;letter-spacing:.2em;transition:all .3s;}
+.tab-btn:hover,.tab-btn.active{background:var(--neon-cyan);color:#000;border-color:var(--neon-cyan);box-shadow:0 0 20px var(--neon-cyan);}
+.tab-content{display:none;padding:30px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);margin-top:20px;}
+.tab-content.active{display:block;}
+.form-group{margin-bottom:20px;}
+.form-label{display:block;color:var(--neon-cyan);margin-bottom:8px;font-size:.8rem;letter-spacing:.15em;}
+.form-input,.form-textarea{width:100%;padding:12px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'Share Tech Mono',monospace;font-size:.85rem;}
+.form-textarea{min-height:100px;resize:vertical;}
+.form-input:focus,.form-textarea:focus{outline:none;border-color:var(--neon-cyan);box-shadow:0 0 10px rgba(0,255,209,.3);}
+.btn-primary{background:var(--neon-orange);color:#000;border:none;padding:14px 32px;font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.2em;cursor:pointer;transition:all .3s;}
+.btn-primary:hover{box-shadow:0 0 30px var(--neon-orange);transform:translateY(-2px);}
+.gallery-preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;margin-top:20px;}
+.gallery-item{aspect-ratio:4/3;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);position:relative;overflow:hidden;}
+.gallery-item img{width:100%;height:100%;object-fit:cover;}
+.gallery-item-delete{position:absolute;top:5px;right:5px;background:rgba(255,0,0,.8);color:#fff;border:none;padding:5px 10px;cursor:pointer;font-size:.7rem;}
+.members-list{margin-top:20px;}
+.member-request{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);padding:20px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;}
+.member-info{flex:1;}
+.member-name{font-size:1rem;color:var(--neon-cyan);margin-bottom:5px;}
+.member-details{font-size:.75rem;color:rgba(255,255,255,.5);}
+.member-actions{display:flex;gap:10px;}
+.btn-approve{background:var(--neon-cyan);color:#000;border:none;padding:8px 16px;cursor:pointer;font-size:.7rem;font-weight:700;}
+.btn-reject{background:rgba(255,0,0,.7);color:#fff;border:none;padding:8px 16px;cursor:pointer;font-size:.7rem;}
+.status-message{padding:15px;margin:15px 0;border-radius:4px;font-size:.85rem;}
+.status-success{background:rgba(57,255,20,.1);border:1px solid rgba(57,255,20,.3);color:var(--neon-cyan);}
+.status-error{background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.3);color:#ff6b6b;}
+.file-upload-area{border:2px dashed rgba(0,255,209,.3);padding:40px;text-align:center;cursor:pointer;transition:all .3s;}
+.file-upload-area:hover{background:rgba(0,255,209,.05);border-color:var(--neon-cyan);}
+.file-upload-area input{display:none;}
+</style>
+</head>
+<body>
+<div class="admin-container">
+  <div class="admin-header">
+    <h1 class="admin-title">🚀 SJU ADMIN PANEL</h1>
+    <p class="admin-subtitle">SPACE JUNKIES UGANDA // MISSION CONTROL</p>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="tab-btn active" onclick="showTab('gallery')">GALLERY MANAGER</button>
+    <button class="tab-btn" onclick="showTab('members')">MEMBER REQUESTS</button>
+    <button class="tab-btn" onclick="showTab('events')">EVENTS</button>
+  </div>
+
+  <!-- Gallery Tab -->
+  <div id="gallery-tab" class="tab-content active">
+    <h2 style="color:var(--neon-orange);margin-bottom:20px;font-family:'Orbitron',sans-serif;">📸 GALLERY MANAGER</h2>
+    
+    <div class="form-group">
+      <label class="form-label">UPLOAD IMAGES</label>
+      <div class="file-upload-area" onclick="document.getElementById('gallery-upload').click()">
+        <input type="file" id="gallery-upload" multiple accept="image/*" onchange="handleGalleryUpload(event)">
+        <p style="color:var(--neon-cyan);font-size:1.2rem;margin-bottom:10px;">📁 CLICK TO SELECT IMAGES</p>
+        <p style="color:rgba(255,255,255,.4);font-size:.75rem;">Supports: JPG, PNG, GIF • Multiple files allowed</p>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">IMAGE CAPTION</label>
+      <input type="text" id="gallery-caption" class="form-input" placeholder="e.g., Milky Way from Lake Mburo - March 2026">
+    </div>
+
+    <button class="btn-primary" onclick="uploadGalleryImage()">UPLOAD TO GALLERY</button>
+
+    <div id="gallery-status"></div>
+
+    <h3 style="color:var(--neon-cyan);margin:40px 0 20px;font-family:'Orbitron',sans-serif;">CURRENT GALLERY</h3>
+    <div class="gallery-preview" id="gallery-preview">
+      <!-- Gallery items will be loaded here -->
+    </div>
+  </div>
+
+  <!-- Members Tab -->
+  <div id="members-tab" class="tab-content">
+    <h2 style="color:var(--neon-orange);margin-bottom:20px;font-family:'Orbitron',sans-serif;">👥 MEMBER REQUESTS</h2>
+    
+    <div class="members-list" id="members-list">
+      <!-- Member requests will be loaded here -->
+    </div>
+  </div>
+
+  <!-- Events Tab -->
+  <div id="events-tab" class="tab-content">
+    <h2 style="color:var(--neon-orange);margin-bottom:20px;font-family:'Orbitron',sans-serif;">📅 EVENT MANAGER</h2>
+    
+    <div class="form-group">
+      <label class="form-label">EVENT TITLE</label>
+      <input type="text" id="event-title" class="form-input" placeholder="e.g., Kololo Hill Stargazing Night">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">EVENT DATE</label>
+      <input type="date" id="event-date" class="form-input">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">EVENT TIME</label>
+      <input type="time" id="event-time" class="form-input">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">LOCATION</label>
+      <input type="text" id="event-location" class="form-input" placeholder="e.g., Kololo Hill, Kampala">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">DESCRIPTION</label>
+      <textarea id="event-description" class="form-textarea" placeholder="Event details..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">EVENT TYPE</label>
+      <select id="event-type" class="form-input">
+        <option value="stargazing">Stargazing</option>
+        <option value="workshop">Workshop</option>
+        <option value="expedition">Expedition</option>
+        <option value="online">Online</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="createEvent()">CREATE EVENT</button>
+    <div id="event-status"></div>
+  </div>
+</div>
+
+<script>
+// Tab switching
+function showTab(tabName){
+  document.querySelectorAll('.tab-btn').forEach(btn=>btn.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(content=>content.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tabName+'-tab').classList.add('active');
+}
+
+// Gallery Upload
+let selectedFiles=[];
+function handleGalleryUpload(event){
+  selectedFiles=Array.from(event.target.files);
+  showStatus('gallery-status',`${selectedFiles.length} file(s) selected`,'success');
+}
+
+async function uploadGalleryImage(){
+  if(selectedFiles.length===0){
+    showStatus('gallery-status','Please select at least one image','error');
+    return;
+  }
+  const caption=document.getElementById('gallery-caption').value;
+  const formData=new FormData();
+  selectedFiles.forEach(file=>formData.append('images',file));
+  formData.append('caption',caption);
+  
+  try{
+    const res=await fetch('/api/admin/gallery/upload',{method:'POST',body:formData});
+    const data=await res.json();
+    if(res.ok){
+      showStatus('gallery-status','Images uploaded successfully!','success');
+      loadGallery();
+      document.getElementById('gallery-caption').value='';
+      document.getElementById('gallery-upload').value='';
+      selectedFiles=[];
+    }else{
+      showStatus('gallery-status',data.error||'Upload failed','error');
+    }
+  }catch(err){
+    showStatus('gallery-status','Upload error: '+err.message,'error');
+  }
+}
+
+async function loadGallery(){
+  try{
+    const res=await fetch('/api/admin/gallery');
+    const data=await res.json();
+    const preview=document.getElementById('gallery-preview');
+    preview.innerHTML=data.images.map(img=>`
+      <div class="gallery-item">
+        <img src="${img.url}" alt="${img.caption}">
+        <button class="gallery-item-delete" onclick="deleteImage('${img.id}')">✕</button>
+      </div>
+    `).join('');
+  }catch(err){
+    console.error('Failed to load gallery:',err);
+  }
+}
+
+async function deleteImage(id){
+  if(!confirm('Delete this image?'))return;
+  try{
+    const res=await fetch(`/api/admin/gallery/${id}`,{method:'DELETE'});
+    if(res.ok){
+      loadGallery();
+      showStatus('gallery-status','Image deleted','success');
+    }
+  }catch(err){
+    showStatus('gallery-status','Delete failed','error');
+  }
+}
+
+// Member Requests
+async function loadMemberRequests(){
+  try{
+    const res=await fetch('/api/admin/members/requests');
+    const data=await res.json();
+    const list=document.getElementById('members-list');
+    if(data.requests.length===0){
+      list.innerHTML='<p style="color:rgba(255,255,255,.4);text-align:center;padding:40px;">No pending requests</p>';
+      return;
+    }
+    list.innerHTML=data.requests.map(req=>`
+      <div class="member-request" id="req-${req.id}">
+        <div class="member-info">
+          <div class="member-name">${req.name}</div>
+          <div class="member-details">
+            📧 ${req.email} • 📱 ${req.phone}<br>
+            🎮 Game Score: ${req.gameScore||'N/A'} • ⏰ ${new Date(req.timestamp).toLocaleString()}
+          </div>
+        </div>
+        <div class="member-actions">
+          <button class="btn-approve" onclick="approveMember('${req.id}')">✓ APPROVE</button>
+          <button class="btn-reject" onclick="rejectMember('${req.id}')">✕ REJECT</button>
+        </div>
+      </div>
+    `).join('');
+  }catch(err){
+    console.error('Failed to load requests:',err);
+  }
+}
+
+async function approveMember(id){
+  try{
+    const res=await fetch(`/api/admin/members/approve/${id}`,{method:'POST'});
+    if(res.ok){
+      document.getElementById('req-'+id).remove();
+    }
+  }catch(err){
+    alert('Approval failed');
+  }
+}
+
+async function rejectMember(id){
+  try{
+    const res=await fetch(`/api/admin/members/reject/${id}`,{method:'POST'});
+    if(res.ok){
+      document.getElementById('req-'+id).remove();
+    }
+  }catch(err){
+    alert('Rejection failed');
+  }
+}
+
+// Events
+async function createEvent(){
+  const event={
+    title:document.getElementById('event-title').value,
+    date:document.getElementById('event-date').value,
+    time:document.getElementById('event-time').value,
+    location:document.getElementById('event-location').value,
+    description:document.getElementById('event-description').value,
+    type:document.getElementById('event-type').value
+  };
+  
+  try{
+    const res=await fetch('/api/admin/events',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(event)
+    });
+    const data=await res.json();
+    if(res.ok){
+      showStatus('event-status','Event created successfully!','success');
+      document.querySelectorAll('#events-tab input,#events-tab textarea').forEach(el=>el.value='');
+    }else{
+      showStatus('event-status',data.error||'Failed to create event','error');
+    }
+  }catch(err){
+    showStatus('event-status','Error: '+err.message,'error');
+  }
+}
+
+function showStatus(elementId,message,type){
+  const el=document.getElementById(elementId);
+  el.innerHTML=`<div class="status-message status-${type}">${message}</div>`;
+  setTimeout(()=>el.innerHTML='',5000);
+}
+
+// Load data on page load
+loadGallery();
+loadMemberRequests();
+setInterval(loadMemberRequests,30000); // Refresh every 30 seconds
+</script>
+</body>
+</html>

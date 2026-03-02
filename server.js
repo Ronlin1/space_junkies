@@ -9,9 +9,58 @@ require('dotenv').config();
 const express = require('express');
 const path    = require('path');
 const { GoogleGenAI } = require('@google/genai');
+const multer = require('multer');
+const fs = require('fs');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
+
+// Persistent storage files
+const GALLERY_FILE = path.join(__dirname, 'gallery-data.json');
+const MEMBERS_FILE = path.join(__dirname, 'members-data.json');
+const EVENTS_FILE = path.join(__dirname, 'events-data.json');
+
+// Load data from files
+function loadData(file, defaultData = []) {
+  try {
+    if (fs.existsSync(file)) {
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    }
+  } catch (err) {
+    console.error(`Error loading ${file}:`, err);
+  }
+  return defaultData;
+}
+
+// Save data to files
+function saveData(file, data) {
+  try {
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error(`Error saving ${file}:`, err);
+  }
+}
+
+// Initialize data
+let galleryImages = loadData(GALLERY_FILE, []);
+let memberRequests = loadData(MEMBERS_FILE, []);
+let events = loadData(EVENTS_FILE, []);
 
 // ── Middleware ────────────────────────────────
 app.use(express.json());
@@ -76,6 +125,163 @@ app.post('/api/chat', async (req, res) => {
     return res.status(500).json({ error: `Gemini error: ${err.message || 'Unknown error'}` });
   }
 });
+
+// ── Catch-all: serve index.html for SPA routing ─
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ══════════════════════════════════════════════════
+// ADMIN API ENDPOINTS
+// ══════════════════════════════════════════════════
+
+// Gallery Upload
+app.post('/api/admin/gallery/upload', upload.array('images', 10), (req, res) => {
+  try {
+    const caption = req.body.caption || '';
+    const uploadedImages = req.files.map(file => ({
+      id: Date.now() + '-' + Math.random().toString(36).substring(2, 11),
+      url: `/uploads/${file.filename}`,
+      caption,
+      filename: file.filename,
+      uploadedAt: new Date().toISOString()
+    }));
+    
+    galleryImages.push(...uploadedImages);
+    saveData(GALLERY_FILE, galleryImages);
+    res.json({ success: true, images: uploadedImages });
+  } catch (err) {
+    console.error('[Gallery Upload Error]', err);
+    res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// Get Gallery Images (Admin)
+app.get('/api/admin/gallery', (req, res) => {
+  res.json({ images: galleryImages });
+});
+
+// Get Gallery Images (Public - for main site)
+app.get('/api/gallery', (req, res) => {
+  res.json({ images: galleryImages });
+});
+
+// Delete Gallery Image
+app.delete('/api/admin/gallery/:id', (req, res) => {
+  const { id } = req.params;
+  const imageIndex = galleryImages.findIndex(img => img.id === id);
+  
+  if (imageIndex === -1) {
+    return res.status(404).json({ error: 'Image not found' });
+  }
+  
+  const image = galleryImages[imageIndex];
+  const filePath = path.join(__dirname, 'public', image.url);
+  
+  // Delete file from filesystem
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+  
+  galleryImages.splice(imageIndex, 1);
+  saveData(GALLERY_FILE, galleryImages);
+  res.json({ success: true });
+});
+
+// Member Request Submission
+app.post('/api/members/join', (req, res) => {
+  const { name, email, phone, gameScore } = req.body;
+  
+  if (!name || !email) {
+    return res.status(400).json({ error: 'Name and email are required' });
+  }
+  
+  const request = {
+    id: Date.now() + '-' + Math.random().toString(36).substring(2, 11),
+    name,
+    email,
+    phone: phone || 'N/A',
+    gameScore: gameScore || 0,
+    timestamp: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  memberRequests.push(request);
+  saveData(MEMBERS_FILE, memberRequests);
+  res.json({ success: true, message: 'Request submitted! We\'ll contact you soon.' });
+});
+
+// Get Member Requests
+app.get('/api/admin/members/requests', (req, res) => {
+  const pending = memberRequests.filter(req => req.status === 'pending');
+  res.json({ requests: pending });
+});
+
+// Approve Member
+app.post('/api/admin/members/approve/:id', (req, res) => {
+  const request = memberRequests.find(r => r.id === req.params.id);
+  if (!request) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  
+  request.status = 'approved';
+  request.approvedAt = new Date().toISOString();
+  
+  saveData(MEMBERS_FILE, memberRequests);
+  
+  // Here you would typically:
+  // - Send welcome email
+  // - Add to WhatsApp group
+  // - Update member count
+  
+  res.json({ success: true, message: 'Member approved' });
+});
+
+// Reject Member
+app.post('/api/admin/members/reject/:id', (req, res) => {
+  const request = memberRequests.find(r => r.id === req.params.id);
+  if (!request) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  
+  request.status = 'rejected';
+  request.rejectedAt = new Date().toISOString();
+  
+  saveData(MEMBERS_FILE, memberRequests);
+  
+  res.json({ success: true, message: 'Request rejected' });
+});
+
+// Create Event
+app.post('/api/admin/events', (req, res) => {
+  const { title, date, time, location, description, type } = req.body;
+  
+  if (!title || !date) {
+    return res.status(400).json({ error: 'Title and date are required' });
+  }
+  
+  const event = {
+    id: Date.now() + '-' + Math.random().toString(36).substring(2, 11),
+    title,
+    date,
+    time: time || '00:00',
+    location: location || 'TBA',
+    description: description || '',
+    type: type || 'stargazing',
+    createdAt: new Date().toISOString()
+  };
+  
+  events.push(event);
+  saveData(EVENTS_FILE, events);
+  res.json({ success: true, event });
+});
+
+// Get Events
+app.get('/api/events', (req, res) => {
+  res.json({ events });
+});
+
+// ══════════════════════════════════════════════════
 
 // ── Catch-all: serve index.html for SPA routing ─
 app.get('*', (req, res) => {
